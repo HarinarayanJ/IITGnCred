@@ -1,6 +1,7 @@
 const { decrypt } = require("../Utils/Security");
+const {GOV, API_URL_} = require("./CONSTANT");
 
-const API_URL = "http://localhost:3000/api/register";
+const API_URL = `${API_URL_}/api/register`;
 
 describe("POST /api/register (Live Integration)", () => {
   test("should register a Student successfully", async () => {
@@ -23,7 +24,7 @@ describe("POST /api/register (Live Integration)", () => {
     const response = await fetch(API_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ role: "University", universityName: "MIT1" }),
+      body: JSON.stringify({ role: "University", universityName: "MIT1" + Date.now() }), // Unique name to avoid conflicts
     });
 
     const result = decrypt(await response.json()); // Decrypting the response if it's encrypted

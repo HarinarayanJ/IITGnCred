@@ -56,7 +56,7 @@ const JWTAuthMiddleware = (req, res, next) => {
 
   if (!token) return res.sendStatus(401);
 
-  jwt.verify(token, JWT_SECRET, (err, user) => {
+  jwt.verify(token, secretKey, (err, user) => {
     if (err) return res.sendStatus(403);
     req.user = {
       wallet: user.wallet,

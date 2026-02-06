@@ -1,0 +1,31 @@
+### ---------------------------------------------------
+### 1. Approve University (SUCCESS CASE - Requires GOV Token)
+### ---------------------------------------------------
+POST http://localhost:3000/api/approve
+Content-Type: application/json
+Authorization: Bearer <PASTE_YOUR_GOV_TOKEN_HERE>
+
+{
+    "universityName": "Global Blockchain Academy"
+}
+
+### ---------------------------------------------------
+### 2. Attempt Approval as Student (FAIL CASE - 403 Forbidden)
+### ---------------------------------------------------
+POST http://localhost:3000/api/approve
+Content-Type: application/json
+Authorization: Bearer <PASTE_YOUR_STUDENT_TOKEN_HERE>
+
+{
+    "universityName": "Global Blockchain Academy"
+}
+
+### ---------------------------------------------------
+### 3. Missing Token (FAIL CASE - 401 Unauthorized)
+### ---------------------------------------------------
+POST http://localhost:3000/api/approve
+Content-Type: application/json
+
+{
+    "universityName": "Global Blockchain Academy"
+}

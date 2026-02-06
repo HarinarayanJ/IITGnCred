@@ -1,12 +1,13 @@
 // login.test.js
 const { encryptWrapper, decrypt } = require("../Utils/Security");
+const {GOV, API_URL_} = require("./CONSTANT");
 
 // Configuration
-const API_URL = "http://localhost:3000/api/login";
+const API_URL = `${API_URL_}/api/login`;
 
 // Test Data matches your script
 const VALID_PAYLOAD = {
-    walletAddress: "0x8042CCF709ABEf7af0B5Ca4d1b4655C6592EA08E",
+    walletAddress: GOV,
     // Note: If your server requires a signature, add it here:
     // signature: "0x..." 
 };
