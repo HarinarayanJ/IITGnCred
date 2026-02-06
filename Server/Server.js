@@ -25,12 +25,19 @@ app.get("/api/health", (_, res) => {
 });
 
 app.post("/api/login", decryptMiddleWare, async (req, res) => {
-  const walletAddress = req.body.walletAddress;
-  const contract = await getContract(web3, contractArtifact);
-  const role = await contract.methods.getAuthLevel(walletAddress).call();
-	console.log("[INFO] Auth Level for", walletAddress, "is", role);
-	const token = getJWTToken(walletAddress, role);
-  res.status(200).send({ message: "Login Endpoint - To be implemented" });
+  try {
+    const walletAddress = req.body.walletAddress;
+    const contract = await getContract(web3, contractArtifact);
+    const role = await contract.methods.getAuthLevel(walletAddress).call();
+    console.log("[INFO] Auth Level for", walletAddress, "is", role);
+    const token = getJWTToken(walletAddress, role);
+    res.status(200).send(security.encrypWrapper({ token: token, role: role, status: true }));
+  } catch (error) {
+    console.error("[ERROR] Login Failed:", error.message);
+    res
+      .status(500)
+      .send(security.encrypWrapper({ error: "Login Failed: " + error.message, status: false }));
+  }
 });
 
 app.listen(3000, () => {

@@ -1,10 +1,13 @@
-import CryptoJS from "crypto-js";
-import jwt from "jsonwebtoken";
+// import CryptoJS from "crypto-js";
+// import jwt from "jsonwebtoken";
+
+const CryptoJS = require("crypto-js");
+const jwt = require("jsonwebtoken");
 
 const secretKey = "vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3"; // TODO: Change secret Key
 const TOKEN_EXPIRY = "24h";
 
-export function getJWTToken(walletAddress, role) {
+function getJWTToken(walletAddress, role) {
     
     // 1. Define the Payload (Data inside the token)
     const payload = {
@@ -22,22 +25,22 @@ export function getJWTToken(walletAddress, role) {
     return token;
 }
 
-export const encrypWrapper = (data) => {
+const encrypWrapper = (data) => {
     const jsonString = JSON.stringify(data);
     return JSON.stringify(encrypt(jsonString));
 }
 
-export const encrypt = (text) => {
+const encrypt = (text) => {
   return { content: CryptoJS.AES.encrypt(text, secretKey).toString() };
 };
 
-export const decrypt = (ciphertext) => {
+const decrypt = (ciphertext) => {
   const bytes = CryptoJS.AES.decrypt(ciphertext.content, secretKey);
   const originalText = bytes.toString(CryptoJS.enc.Utf8);
   return JSON.parse(originalText);
 };
 
-export const decryptMiddleWare = (req, res, next) => {
+const decryptMiddleWare = (req, res, next) => {
     try {
         if (req.body.content) {
             req.body = decrypt(req.body);
@@ -48,7 +51,7 @@ export const decryptMiddleWare = (req, res, next) => {
     }  
 };
 
-export const authenticateToken = (req, res, next) => {
+const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1]; // Bearer <TOKEN>
 
@@ -60,3 +63,12 @@ export const authenticateToken = (req, res, next) => {
         next();
     });
 };
+
+module.exports = {
+    getJWTToken,
+    encrypWrapper,
+    encrypt,
+    decrypt,
+    decryptMiddleWare,
+    authenticateToken
+}
