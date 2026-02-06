@@ -3,9 +3,13 @@ pragma solidity ^0.8.0;
 
 contract IdentityRegistry {
 
-    // --- ROLES & PERMISSIONS ---
+    // ==========================================
+    // 1. STATE VARIABLES & MAPPINGS
+    // ==========================================
+
     address public governmentAdmin;
 
+    // --- Enums & Structs ---
     enum IssuerStatus { None, Pending, Authorized, Rejected }
 
     struct IssuerDetails {
@@ -14,16 +18,6 @@ contract IdentityRegistry {
         uint256 joinedAt;
     }
 
-    // 1. Primary storage: Find details by Address
-    mapping(address => IssuerDetails) public issuers;
-
-    // 2. Lookup storage: Find Address by Name (For "Approve by Name")
-    mapping(string => address) public nameToAddress;
-
-    // 3. NEW: Iterable list of all applicants (For "Get All Requests")
-    address[] public issuerList;
-
-    // --- CREDENTIAL STORAGE ---
     struct Credential {
         string credentialName;
         string dataHash;
@@ -32,8 +26,6 @@ contract IdentityRegistry {
         bool isValid;
     }
 
-    mapping(address => Credential[]) public userCredentials;
-
     struct GlobalMetadata {
         address student;
         address issuer;
@@ -41,13 +33,43 @@ contract IdentityRegistry {
         bool isValid;
         bool exists;
     }
-    mapping(string => GlobalMetadata) private globalHashRegistry;
 
-    // --- EVENTS ---
+    // A helper struct for returning data to the frontend
+    struct IssuerRequestView {
+        address walletAddress;
+        string name;
+        IssuerStatus status;
+        uint256 joinedAt;
+    }
+
+    // --- Mappings ---
+    
+    // Identity & Permissions
+    mapping(address => IssuerDetails) public issuers;
+    mapping(string => address) public nameToAddress; // University Name -> Address
+    address[] public issuerList; // List for iteration
+
+    // Student Registry (NEW)
+    mapping(string => address) public usernameToAddress; // Username -> Address
+    mapping(address => string) public addressToUsername; // Address -> Username
+
+    // Credentials
+    mapping(address => Credential[]) public userCredentials;
+    mapping(string => GlobalMetadata) private globalHashRegistry; // Hash -> Metadata
+
+    // ==========================================
+    // 2. EVENTS
+    // ==========================================
+
     event IssuerRequested(string name, address indexed issuer);
     event IssuerApproved(string name, address indexed issuer);
     event CredentialIssued(address indexed student, string dataHash, address indexed issuer);
     event CredentialRevoked(string dataHash);
+    event StudentRegistered(string username, address indexed student);
+
+    // ==========================================
+    // 3. MODIFIERS & CONSTRUCTOR
+    // ==========================================
 
     modifier onlyGov() {
         require(msg.sender == governmentAdmin, "Caller is not the Government");
@@ -63,24 +85,48 @@ contract IdentityRegistry {
         governmentAdmin = msg.sender;
     }
 
-    // Get Authorizoation Level
+    // ==========================================
+    // 4. HELPER FUNCTIONS
+    // ==========================================
+
     function getAuthLevel(address _user) public view returns (string memory) {
-        // 1. Check if the address is the Government Admin
         if (_user == governmentAdmin) {
             return "Gov";
-        } 
-        // 2. Check if the address is an AUTHORIZED Issuer
-        else if (issuers[_user].status == IssuerStatus.Authorized) {
+        } else if (issuers[_user].status == IssuerStatus.Authorized) {
             return "Uni";
-        } 
-        // 3. Default to Student/Public for everyone else (including Pending issuers)
-        else {
+        } else {
             return "Stu";
         }
     }
 
     // ==========================================
-    // 1. GOVERNANCE
+    // 5. STUDENT REGISTRY (NEW)
+    // ==========================================
+
+    /** * @dev Registers a human-readable username for the caller's wallet address.
+     */
+    function registerStudent(string memory _username) public {
+        require(bytes(_username).length > 0, "Username cannot be empty");
+        require(usernameToAddress[_username] == address(0), "Username already taken");
+        require(bytes(addressToUsername[msg.sender]).length == 0, "Wallet already registered");
+
+        usernameToAddress[_username] = msg.sender;
+        addressToUsername[msg.sender] = _username;
+
+        emit StudentRegistered(_username, msg.sender);
+    }
+
+    /** * @dev Fetch credentials using a username instead of an address.
+     */
+    function getCredentialsByUsername(string memory _username) public view returns (Credential[] memory) {
+        address studentAddr = usernameToAddress[_username];
+        require(studentAddr != address(0), "Username not found");
+
+        return userCredentials[studentAddr];
+    }
+
+    // ==========================================
+    // 6. GOVERNANCE (University Approval)
     // ==========================================
 
     function requestAuthorization(string memory _universityName) public {
@@ -88,17 +134,13 @@ contract IdentityRegistry {
         require(bytes(_universityName).length > 0, "Name cannot be empty");
         require(nameToAddress[_universityName] == address(0), "University name already taken");
 
-        // 1. Store Details
         issuers[msg.sender] = IssuerDetails({
             name: _universityName,
             status: IssuerStatus.Pending,
             joinedAt: 0
         });
 
-        // 2. Map Name -> Address
         nameToAddress[_universityName] = msg.sender;
-
-        // 3. NEW: Add to the list so we can loop over it later
         issuerList.push(msg.sender);
 
         emit IssuerRequested(_universityName, msg.sender);
@@ -123,24 +165,10 @@ contract IdentityRegistry {
         issuers[uniAddress].status = IssuerStatus.Rejected;
     }
 
-    // ==========================================
-    // 2. NEW: VIEW FUNCTIONS (For Frontend)
-    // ==========================================
-
-    // A helper struct to return data cleanly to the frontend
-    struct IssuerRequestView {
-        address walletAddress;
-        string name;
-        IssuerStatus status;
-        uint256 joinedAt;
-    }
-
     /**
      * @dev Returns ALL requests (Pending, Authorized, and Rejected).
-     * Useful for the Government Dashboard.
      */
     function getAllRequests() public view returns (IssuerRequestView[] memory) {
-        // Create a temporary array to hold the results
         IssuerRequestView[] memory allRequests = new IssuerRequestView[](issuerList.length);
 
         for (uint i = 0; i < issuerList.length; i++) {
@@ -154,12 +182,11 @@ contract IdentityRegistry {
                 joinedAt: details.joinedAt
             });
         }
-
         return allRequests;
     }
 
     // ==========================================
-    // 3. ISSUANCE & VERIFICATION
+    // 7. ISSUANCE & VERIFICATION
     // ==========================================
 
     function issueCredential(address _student, string memory _name, string memory _dataHash) public onlyAuthorizedIssuer {

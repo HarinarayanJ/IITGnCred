@@ -201,6 +201,8 @@ app.get("/api/requests", JWTAuthMiddleware, async (req, res) => {
   }
 });
 
+app.get("")
+
 //TODO: Remove this endpoint in production, only for testing purposes
 app.get("/api/dev/requests", async (req, res) => {
   try {
