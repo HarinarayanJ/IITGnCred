@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "Server.js",
   "scripts": {
-    "test": "npx jest ./Test",
+    "test": "npx jest ./Test --runInBand",
     "dev": "nodemon server.js",
     "start": "node server.js"
   },

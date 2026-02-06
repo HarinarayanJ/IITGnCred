@@ -125,6 +125,11 @@ contract IdentityRegistry {
         return userCredentials[studentAddr];
     }
 
+        function getAddressByUsername(string memory _username) public view returns (address) {
+        address studentAddr = usernameToAddress[_username];
+        return studentAddr;
+    }
+
     // ==========================================
     // 6. GOVERNANCE (University Approval)
     // ==========================================

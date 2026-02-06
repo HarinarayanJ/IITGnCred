@@ -18,12 +18,12 @@ async function createAccount(web3) {
   console.log("Address:", newAccount.address);
   console.log("Private Key:", newAccount.privateKey);
   const nodeAccounts = await web3.eth.getAccounts();
-  const admin = nodeAccounts[0]; 
-  
+  const admin = nodeAccounts[0];
+
   await web3.eth.sendTransaction({
     from: admin,
     to: newAccount.address,
-    value: web3.utils.toWei('1', 'ether') 
+    value: web3.utils.toWei("1", "ether"),
   });
   web3.eth.accounts.wallet.add(newAccount.privateKey);
   return newAccount;
@@ -45,30 +45,60 @@ async function requestUniversityAccess(
       from: wallet.address,
       gas: 5000000, // Gas limit
     });
-return receipt;
+  return receipt;
 }
 
-async function approveUniversity(  web3,
-  wallet,
-  universityName,
-  contractArtifact) {
+async function registerStudent(web3, wallet, studentName, contractArtifact) {
+  console.log("\n--- Registering Student ---");
+  console.log("Registering student with wallet:", wallet.address);
   const contract = await getContract(web3, contractArtifact);
   const receipt = await contract.methods
-    .approveIssuer(universityName)
+    .registerStudent(studentName)
     .send({
-      from: wallet,
+      from: wallet.address,
       gas: 5000000, // Gas limit
     });
   return receipt;
 }
 
-async function rejectUniversity(  web3,
+async function approveUniversity(
+  web3,
   wallet,
   universityName,
-  contractArtifact) {
+  contractArtifact,
+) {
+  const contract = await getContract(web3, contractArtifact);
+  const receipt = await contract.methods.approveIssuer(universityName).send({
+    from: wallet,
+    gas: 5000000, // Gas limit
+  });
+  return receipt;
+}
+
+async function rejectUniversity(
+  web3,
+  wallet,
+  universityName,
+  contractArtifact,
+) {
+  const contract = await getContract(web3, contractArtifact);
+  const receipt = await contract.methods.rejectIssuer(universityName).send({
+    from: wallet,
+    gas: 5000000, // Gas limit
+  });
+  return receipt;
+}
+
+async function IssueCredentials(
+  web3,
+  wallet,
+  studentID,
+  credentialData,
+  contractArtifact,
+) {
   const contract = await getContract(web3, contractArtifact);
   const receipt = await contract.methods
-    .rejectIssuer(universityName)
+    .issueCredential(studentID, credentialData)
     .send({
       from: wallet,
       gas: 5000000, // Gas limit
@@ -81,5 +111,7 @@ module.exports = {
   createAccount,
   requestUniversityAccess,
   approveUniversity,
-  rejectUniversity
+  rejectUniversity,
+  IssueCredentials,
+  registerStudent
 };

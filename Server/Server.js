@@ -14,9 +14,10 @@ const {
   requestUniversityAccess,
   approveUniversity,
   rejectUniversity,
+  registerStudent,
+  IssueCredentials
 } = require("./Utils/Web3");
 const fs = require("fs");
-const { get } = require("http");
 
 app.use(express.json());
 const web3 = new Web3("http://127.0.0.1:8545");
@@ -57,15 +58,24 @@ app.post("/api/login", decryptMiddleWare, async (req, res) => {
 app.post("/api/register", decryptMiddleWare, async (req, res) => {
   try {
     const role = req.body.role;
-    if (role == "Student") {
+    if (role === "Student") {
       const newAccount = await createAccount(web3);
+      const studentName = req.body.studentName;
+      // eslint-disable-next-line no-unused-vars
+      const _ = await registerStudent(
+        web3,
+        newAccount,
+        studentName,
+        contractArtifact,
+      );
       res
         .status(200)
         .send(encryptWrapper({ account: newAccount, status: true }));
-    } else if (role == "University") {
+    } else if (role === "University") {
       const newAccount = await createAccount(web3);
       const universityName = req.body.universityName;
-      const receipt = await requestUniversityAccess(
+      // eslint-disable-next-line no-unused-vars
+      const _ = await requestUniversityAccess(
         web3,
         newAccount,
         universityName,
@@ -104,7 +114,8 @@ app.post(
         );
       }
       const { universityName } = req.body; // Extract from decrypted body
-      const receipt = await approveUniversity(
+      // eslint-disable-next-line no-unused-vars
+      const _ = await approveUniversity(
         web3,
         wallet,
         universityName,
@@ -139,7 +150,8 @@ app.post(
         );
       }
       const { universityName } = req.body; // Extract from decrypted body
-      const receipt = await rejectUniversity(
+      // eslint-disable-next-line no-unused-vars
+      const _ = await rejectUniversity(
         web3,
         wallet,
         universityName,
@@ -201,7 +213,45 @@ app.get("/api/requests", JWTAuthMiddleware, async (req, res) => {
   }
 });
 
-app.get("")
+app.get(
+  "/api/issueCredenctials",
+  JWTAuthMiddleware,
+  decryptMiddleWare,
+  async (req, res) => {
+    try {
+      const { wallet, role } = req.user; // Extracted from JWT
+      if (role !== "University") {
+        return res.status(403).send(
+          encryptWrapper({
+            error: "Access Denied: Only Universities can issue credentials",
+            status: false,
+          }),
+        );
+      }
+      const contract = await getContract(web3, contractArtifact);
+      const { student, credentialHash, credentialFile } = req.body; // Extract from decrypted body
+      const studentAddress = await contract.methods
+        .getAddressByUsername(student)
+        .call();
+      // eslint-disable-next-line no-unused-vars
+      const _ = await IssueCredentials(
+        web3,
+        wallet,
+        studentAddress,
+        credentialHash,
+        contractArtifact,
+      );
+    } catch (error) {
+      console.error("[ERROR] Issue Credentials Failed:", error.message);
+      res.status(500).send(
+        encryptWrapper({
+          error: "Issue Credentials Failed: " + error.message,
+          status: false,
+        }),
+      );
+    }
+  },
+);
 
 //TODO: Remove this endpoint in production, only for testing purposes
 app.get("/api/dev/requests", async (req, res) => {

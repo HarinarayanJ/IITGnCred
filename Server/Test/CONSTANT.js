@@ -1,4 +1,4 @@
 module.exports = {
     API_URL_: "http://localhost:3000",
-    GOV: "0xe3B065F533E7b3c8b8324A3744b9415AD9E63C4d",
+    GOV: "0x4f1c9890fe806Ed59b1609a8c698AB4EabE3c8f9",
 }
