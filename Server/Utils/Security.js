@@ -24,7 +24,7 @@ function getJWTToken(walletAddress, role) {
   return token;
 }
 
-const encrypWrapper = (data) => {
+const encryptWrapper = (data) => {
   const jsonString = JSON.stringify(data);
   return JSON.stringify(encrypt(jsonString));
 };
@@ -50,7 +50,7 @@ const decryptMiddleWare = (req, res, next) => {
   }
 };
 
-const authenticateToken = (req, res, next) => {
+const JWTAuthMiddleware = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <TOKEN>
 
@@ -68,9 +68,9 @@ const authenticateToken = (req, res, next) => {
 
 module.exports = {
   getJWTToken,
-  encrypWrapper,
+  encryptWrapper,
   encrypt,
   decrypt,
   decryptMiddleWare,
-  authenticateToken,
+  JWTAuthMiddleware,
 };

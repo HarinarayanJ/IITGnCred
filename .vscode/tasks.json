@@ -1,0 +1,67 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "1. Start Ganache",
+            "type": "shell",
+            "command": "ganache",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": { "regexp": "." },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "RPC Listening on.*"
+                }
+            }
+        },
+         {
+            "label": "6. Start IPFS",
+            "type": "shell",
+            "command": "cd D:\\kubo_v0.39.0_windows-amd64\\kubo; .\\ipfs.exe daemon --offline",
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": { "regexp": "." },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*",
+                    "endsPattern": "RPC Listening on.*"
+                }
+            }
+        },
+        {
+            "label": "2. Truffle Migrate",
+            "type": "shell",
+            "command": "cd Blockchain; truffle migrate --reset",
+            "dependsOn": "1. Start Ganache",
+            "problemMatcher": []
+        },
+        {
+            "label": "3. Start Server",
+            "type": "shell",
+            "command": "cd Server; npm run dev",
+            "dependsOn": "2. Truffle Migrate",
+            "problemMatcher": []
+        },
+        {
+            "label": "4. Start Test",
+            "type": "shell",
+            "command": "cd Server; npm run test",
+            "dependsOn": "3. Start Server",
+            "problemMatcher": []
+        },
+        {
+            "label": "5. Launch Full Stack",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "1. Start Ganache",
+                "2. Truffle Migrate",
+                "3. Start Server"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}

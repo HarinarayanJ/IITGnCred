@@ -1,45 +1,47 @@
-// register.test.js
-const { encrypWrapper, decrypt } = require("../Utils/Security");
+const { decrypt } = require("../Utils/Security");
 
 const API_URL = "http://localhost:3000/api/register";
 
-describe("POST /api/register Integration Tests", () => {
-
-    test("should create a new Ethereum account and return encrypted details", async () => {
-        
-        // 1. Prepare Request
-        // Even though the register endpoint doesn't read the body, 
-        // the middleware might expect valid encrypted JSON structure.
-        const payload = encrypWrapper({});
-
-        // 2. Send Request
-        const response = await fetch(API_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: payload
-        });
-
-        // 3. Assert HTTP Status
-        expect(response.status).toBe(200);
-
-        // 4. Get and Decrypt Response
-        const encryptedResponse = await response.json();
-        
-        // We use decryptWrapper here to read what the server sent back
-        const decryptedData = decrypt(encryptedResponse);
-
-        // 5. Assert Structure
-        expect(decryptedData).toHaveProperty("status", true);
-        expect(decryptedData).toHaveProperty("account");
-        
-        const newAccount = decryptedData.account;
-        expect(newAccount).toHaveProperty("address");
-        expect(newAccount).toHaveProperty("privateKey");
-
-        // 6. Log Output (As requested)
-        console.log('\n--- New Account Generated ---');
-        console.log('New Ethereum Account Created:', newAccount);
-        console.log('Address:', newAccount.address);
-        console.log('Private Key:', newAccount.privateKey);
+describe("POST /api/register (Live Integration)", () => {
+  test("should register a Student successfully", async () => {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "Student" }),
     });
+
+    const result = decrypt(await response.json()); // Decrypting the response if it's encrypted
+
+
+    // Console logs replaced with Assertions
+    expect(response.status).toBe(200);
+    expect(result.status).toBe(true);
+    expect(result).toHaveProperty("account"); // Ensures account data exists
+  });
+
+  test("should register a University successfully", async () => {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "University", universityName: "MIT1" }),
+    });
+
+    const result = decrypt(await response.json()); // Decrypting the response if it's encrypted
+    console.log("University Registration Result:", result); // Debug log for the response
+    expect(response.status).toBe(200);
+    expect(result.status).toBe(true);
+    expect(result).toHaveProperty("account");
+  });
+
+  test("should fail gracefully for an Invalid Role", async () => {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ role: "Admin" }),
+    });
+
+    const result = decrypt(await response.json()); // Decrypting the response if it's encrypted
+    expect(response.status).toBe(500);
+    expect(result.status).toBe(false);
+  });
 });

@@ -1,5 +1,5 @@
 // login.test.js
-const { encrypWrapper, decrypt } = require("../Utils/Security");
+const { encryptWrapper, decrypt } = require("../Utils/Security");
 
 // Configuration
 const API_URL = "http://localhost:3000/api/login";
@@ -16,7 +16,7 @@ describe("POST /api/login Integration Tests", () => {
     test("should return 200 and a token when valid encrypted data is sent", async () => {
         // 1. Prepare Request
         // We encrypt the payload just like the client does
-        const encryptedBody = encrypWrapper(VALID_PAYLOAD);
+        const encryptedBody = encryptWrapper(VALID_PAYLOAD);
 
         // 2. Send Request
         const response = await fetch(API_URL, {
