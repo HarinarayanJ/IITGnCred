@@ -62,7 +62,7 @@
 }
 
 .count-label {
-  font-size: 11px;
+  font-size: 20px;
   font-weight: 700;
   color: white;
   text-transform: uppercase;
@@ -248,3 +248,4 @@
   /* Show fallback for small screens where iframes struggle */
   .mobile-pdf-link { display: block; }
 }
+
