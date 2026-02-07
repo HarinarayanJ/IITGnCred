@@ -54,7 +54,7 @@ const decryptMiddleWare = (req, res, next) => {
 const JWTAuthMiddleware = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // Bearer <TOKEN>
-
+  console.log(token)
   if (!token) return res.sendStatus(401);
 
   jwt.verify(token, secretKey, (err, user) => {
@@ -63,6 +63,7 @@ const JWTAuthMiddleware = (req, res, next) => {
       wallet: user.wallet,
       role: user.role,
     }; // Attach user info to request
+    console.log("Authenticated user:", req.user);
     next();
   });
 };

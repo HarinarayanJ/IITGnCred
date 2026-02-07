@@ -30,6 +30,7 @@ const IssuerDashboard = ({ user, onLogout }) => {
         data: reader.result, // Base64 data
       });
     };
+    console.log("Selected file for upload:", file);
     reader.readAsDataURL(file);
   };
 
@@ -143,13 +144,13 @@ const IssuerDashboard = ({ user, onLogout }) => {
         {activeTab === 'create' && (
           <form onSubmit={handleIssue} className="issue-form">
             <div className="form-group">
-              <label className="form-label">Student Wallet Address</label>
+              <label className="form-label">Student ID</label>
               <input
                 type="text"
                 className="form-input mono"
                 value={holderWallet}
                 onChange={(e) => setHolderWallet(e.target.value)}
-                placeholder="0x..."
+                placeholder=""
                 required
               />
             </div>

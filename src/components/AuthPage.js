@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
 import './AuthPage.css';
-import { registerUser, adminLogin } from '../utils/api';
+import { registerUser, adminLogin, issuerLogin } from '../utils/api';
 
 const AuthPage = ({ onAuthSuccess }) => {
   const [role, setRole] = useState('admin');
@@ -156,6 +156,8 @@ const AuthPage = ({ onAuthSuccess }) => {
         if (wallet.role !== apiRole) {
           throw new Error(`This account is registered as ${wallet.role}, not ${apiRole}.`);
         }
+        
+        issuerLogin(wallet)
 
         // Success
         onAuthSuccess({

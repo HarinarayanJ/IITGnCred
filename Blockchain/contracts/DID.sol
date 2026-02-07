@@ -95,7 +95,7 @@ contract IdentityRegistry {
             return "Gov";
         } else if (issuers[_user].status == IssuerStatus.Authorized) {
             return "Uni";
-        } else {
+        } else  {
             return "Stu";
         }
     }

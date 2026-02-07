@@ -5,3 +5,7 @@ async function Upload(base64, ipfs) {
     return result.cid.toString();
 }
 
+module.exports = {
+    Upload
+}
+

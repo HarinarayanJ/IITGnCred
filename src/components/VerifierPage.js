@@ -34,9 +34,12 @@ const VerifierPage = ({ onBack }) => {
     setVerificationResult(null);
 
     try {
+      console.log("Selected File for Verification:", selectedFile);
       const result = await verifyCredential(selectedFile);
+      console.log("Verification Result:", result);
       setVerificationResult(result);
     } catch (error) {
+      console.error("Verification Error:", error);
       setVerificationResult({
         success: false,
         isValid: false,
@@ -137,22 +140,22 @@ const VerifierPage = ({ onBack }) => {
               <div className="result-details">
                 <div className="detail-row">
                   <span className="detail-label">File Name:</span>
-                  <span className="detail-value">{verificationResult.details.fileName}</span>
+                  <span className="detail-value">{verificationResult.details ? verificationResult.details.filename || "NA" : "NA"}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Verification Time:</span>
                   <span className="detail-value">
-                    {new Date(verificationResult.details.verifiedAt).toLocaleString()}
+                    {verificationResult.details && verificationResult.details.verifiedAt ? new Date(verificationResult.details.verifiedAt).toLocaleString() : "NA"}
                   </span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Issuer:</span>
-                  <span className="detail-value">{verificationResult.details.issuer}</span>
+                  <span className="detail-value">{verificationResult.details && verificationResult.details.issuer ? verificationResult.details.issuer : "NA"}</span>
                 </div>
                 <div className="detail-row">
                   <span className="detail-label">Status:</span>
                   <span className={`status-badge ${verificationResult.isValid ? 'verified' : 'invalid'}`}>
-                    {verificationResult.details.status}
+                    {verificationResult.details && verificationResult.details.status ? verificationResult.details.status : "NA" }
                   </span>
                 </div>
               </div>

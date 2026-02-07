@@ -3,8 +3,7 @@ import { decrypt, encryptWrapper } from "./Security";
 
 // Update Base URL to match the Express server port
 const API = axios.create({
-  baseURL: "http://localhost:3000/api",
-
+  baseURL: "http://10.240.0.76:3000/api",
 });
 
 API.interceptors.request.use((config) => {
@@ -49,18 +48,17 @@ export const registerUser = async (name, walletAddress, password, role) => {
 
 /* ---------------- LOGIN ---------------- */
 export const loginUser = async (walletAddress) => {
+  console.log("Attempting login for wallet:", walletAddress);
   // Encrypt wallet address as expected by decryptMiddleWare
   const encrypted = encryptWrapper({ walletAddress: walletAddress });
 
   const res = await API.post("/login", encrypted);
   // Server returns { token, role, status } inside encryptWrapper
   const data = decrypt(res.data);
-
-  if (data.status) {
-    localStorage.setItem("jwt", data.token);
-    localStorage.setItem("role", data.role);
-    localStorage.setItem("wallet", walletAddress);
-  }
+  console.log("Login response data:", data);
+  localStorage.setItem("jwt", data.token);
+  localStorage.setItem("role", data.role);
+  localStorage.setItem("wallet", walletAddress);
 
   return {
     success: data.status,
@@ -75,6 +73,14 @@ export const adminLogin = async (walletAddress, password) => {
   return loginUser(walletAddress, password, "Gov");
 };
 
+export const issuerLogin = async (walletAddress, username, password) => {
+  return loginUser(walletAddress.address, password, "University");
+};
+
+export const holderLogin = async (walletAddress, username, password) => {
+  return loginUser(walletAddress.address, password, "Student");
+};
+
 /* ---------------- PENDING ISSUERS ---------------- */
 export const getPendingIssuers = async () => {
   const res = await API.get("/requests");
@@ -83,9 +89,7 @@ export const getPendingIssuers = async () => {
   if (!data.requests) return [];
 
   // Filter for status '0' (Pending)
-  return data.requests.filter(
-    (req) => req.status === "1"
-  );
+  return data.requests.filter((req) => req.status === "1");
 };
 
 export const getApprovedIssuers = async () => {
@@ -95,9 +99,7 @@ export const getApprovedIssuers = async () => {
   if (!data.requests) return [];
 
   // Filter for status '2' (Approved) - Server converts BigInt to string
-  const approved = data.requests.filter(
-    (req) => req.status === "2"
-  );
+  const approved = data.requests.filter((req) => req.status === "2");
 
   return approved;
 };
@@ -124,30 +126,32 @@ export const rejectIssuer = async (universityName) => {
 
 /* ---------------- ISSUE CREDENTIAL ---------------- */
 export const issueCredential = async (studentUsername, file) => {
+  console.log("Issuing credential for student:", studentUsername);
+  console.log("File received for issuing credential:", file);
   // 1. Calculate Hash
+  const encoder = new TextEncoder();
   const credentialHashBuffer = await crypto.subtle.digest(
     "SHA-256",
-    await file.arrayBuffer()
+    encoder.encode(file.data), // Use file data for hash
   );
   const credentialHash = Array.from(new Uint8Array(credentialHashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
 
   // 2. Convert File to Base64 (Server expects data for IPFS upload)
-  const fileBase64 = await toBase64(file);
-
-  const encrypted = encryptWrapper({
-    student: studentUsername,
-    credentialHash: credentialHash, // Hex string
-    credentialFile: fileBase64,     // Actual file data
-  });
+  const fileBase64 = file.data;
 
   // NOTE: Server defines this as app.get(), but expects a body.
   // Axios requires `data` property for body in GET requests.
-  const res = await API.get("/issueCredenctials", {
-    data: encrypted
-  });
-  
+  const res = await API.post(
+    "/issueCredenctials",
+    encryptWrapper({
+      student: studentUsername,
+      credentialHash: credentialHash, // Hex string
+      credentialFile: fileBase64, // Actual file data
+    }),
+  );
+
   const data = decrypt(res.data);
 
   return {
@@ -171,22 +175,31 @@ export const getHolderCredentials = async () => {
 
 /* ---------------- VERIFY CREDENTIAL ---------------- */
 export const verifyCredential = async (file) => {
-  // The server does not expose a public /verify endpoint. 
+  // The server does not expose a public /verify endpoint.
   // Verification is done on-chain or via the revoke endpoint internally.
   // We can calculate the hash here for the UI to show.
-  
-  const credentialHashBuffer = await crypto.subtle.digest(
-    "SHA-256",
-    await file.arrayBuffer()
-  );
+  console.log("Calculating hash for verification...");
+  console.log("File read into buffer, calculating hash...");
+  const encoder = new TextEncoder();
+  const data = encoder.encode(file);
+  const credentialHashBuffer = await crypto.subtle.digest("SHA-256", data);
+  console.log("Hash calculated, converting to hex...");
   const hash = Array.from(new Uint8Array(credentialHashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+  console.log("Calculated Credential Hash:", hash);
+  const isValid = await API.post(
+    "/verifyCredentials",
+    encryptWrapper({ credentialHash: hash }),
+  );
+
+  console.log("Verification Result from Server:", isValid);
 
   return {
     success: true,
     message: "Local hash calculated. Use Blockchain explorer to verify.",
-    hash: hash
+    hash: hash,
+    isValid: isValid,
   };
 };
 

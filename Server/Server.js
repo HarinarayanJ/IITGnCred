@@ -24,9 +24,8 @@ const ipfsModule = require("ipfs-http-client");
 const cors = require("cors");
 const { Upload } = require("./Utils/Upload");
 
-app.use(express.json());
 app.use(cors());
-app.use(express.json({ limit: "100mb" }));
+app.use(express.json({ limit: "500mb", extended: true }));
 
 const web3 = new Web3("http://127.0.0.1:8545");
 const ipfs = ipfsModule.create({ url: "http://127.0.0.1:5001" });
@@ -223,14 +222,15 @@ app.get("/api/requests", JWTAuthMiddleware, async (req, res) => {
   }
 });
 
-app.get(
+app.post(
   "/api/issueCredenctials",
   JWTAuthMiddleware,
   decryptMiddleWare,
   async (req, res) => {
     try {
       const { wallet, role } = req.user; // Extracted from JWT
-      if (role !== "University") {
+      if (role !== "Uni") {
+         console.warn(`[WARNING] Unauthorized Credential Issuance Attempt by Wallet: ${wallet} with Role: ${role}`);
         return res.status(403).send(
           encryptWrapper({
             error: "Access Denied: Only Universities can issue credentials",
@@ -249,6 +249,7 @@ app.get(
         web3,
         wallet,
         studentAddress,
+        student,
         credentialHash,
         contractArtifact,
         cid,
@@ -322,7 +323,7 @@ app.post(
 app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
   try {
     const { wallet, role } = req.user; // Extracted from JWT
-    if (role !== "Student") {
+    if (role !== "Stu") {
       return res.status(403).send(
         encryptWrapper({
           error: "Access Denied: Only Students can view their credentials",
@@ -334,9 +335,13 @@ app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
     const credentials = await contract.methods
       .getAllCredentials(wallet)
       .call({ from: wallet });
+    const safeCredentials = JSON.stringify(credentials, (key, value) =>
+      typeof value === "bigint" ? value.toString() : value,
+    );
+
     res.status(200).send(
       encryptWrapper({
-        credentials,
+        credentials: JSON.parse(safeCredentials),
         status: true,
       }),
     );

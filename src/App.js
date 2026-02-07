@@ -42,6 +42,9 @@ function App() {
     setIsChatOpen(false); // Close chat on logout
   };
 
+  console.log("Current User:", user);
+  console.log("Current Role:", role);
+
   return (
     <div className="App">
       {/* Theme Toggle Button */}
@@ -67,12 +70,13 @@ function App() {
       )}
 
       {/* 3. Issuer Dashboard */}
-      {user && role === 'Uni' && (
+      {user && role === 'University' && (
         <IssuerDashboard user={user} onLogout={handleLogout} />
+        
       )}
 
       {/* 4. Holder Dashboard */}
-      {user && role === 'Stu' && (
+      {user && role === 'Student' && (
         <HolderDashboard user={user} onLogout={handleLogout} />
       )}
 

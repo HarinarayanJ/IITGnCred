@@ -91,13 +91,20 @@ async function IssueCredentials(
   web3,
   wallet,
   studentID,
+  student,
   credentialData,
   contractArtifact,
   cid,
 ) {
+  console.log("\n--- Issuing Credential ---");
+  console.log("Issuing credential for student wallet:", student);
+  console.log("Issuing credential for student ID:", studentID);
+  console.log("Credential Data:", credentialData);
+  console.log("CID:", cid);
+  console.log("Issuer Wallet:", wallet);
   const contract = await getContract(web3, contractArtifact);
   const receipt = await contract.methods
-    .issueCredential(studentID, credentialData, cid)
+    .issueCredential(studentID, student, credentialData, cid)
     .send({
       from: wallet,
       gas: 5000000, // Gas limit
@@ -107,8 +114,9 @@ async function IssueCredentials(
 
 async function verifyCredential(web3, credentialHash, contractArtifact) {
   const contract = await getContract(web3, contractArtifact);
+  console.log("Verifying credential with hash:", credentialHash);
   const isValid = await contract.methods
-    .verifyCredential(credentialHash)
+    .verifyByHash(credentialHash)
     .call();
   return isValid;
 }
