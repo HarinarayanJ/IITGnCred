@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import './VerifierPage.css';
 import { verifyCredential } from '../utils/api';
 
-const VerifierPage = ({ onBack }) => {
+const VerifierPage = () => {
   const [selectedFile, setSelectedFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [verificationResult, setVerificationResult] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -15,36 +16,34 @@ const VerifierPage = ({ onBack }) => {
         setSelectedFile({
           name: file.name,
           type: file.type,
-          data: reader.result
+          data: reader.result // Base64
         });
       };
       reader.readAsDataURL(file);
-      setVerificationResult(null);
+      setVerificationResult(null); // Reset previous result
     }
   };
 
   const handleVerify = async (e) => {
     e.preventDefault();
     
-    if (!selectedFile) {
-      return;
-    }
+    if (!selectedFile) return;
 
     setLoading(true);
     setVerificationResult(null);
 
     try {
-      console.log("Selected File for Verification:", selectedFile);
+      // Simulate API call delay for UX
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
       const result = await verifyCredential(selectedFile);
-      console.log("Verification Result:", result);
       setVerificationResult(result);
     } catch (error) {
       console.error("Verification Error:", error);
       setVerificationResult({
-        success: false,
         isValid: false,
-        message: 'Verification failed',
-        details: { status: 'ERROR' }
+        message: 'Verification process failed.',
+        details: { status: 'ERROR', error: error.message }
       });
     } finally {
       setLoading(false);
@@ -54,16 +53,18 @@ const VerifierPage = ({ onBack }) => {
   const resetForm = () => {
     setSelectedFile(null);
     setVerificationResult(null);
-    document.getElementById('verify-file-input').value = '';
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   return (
     <div className="verifier-page-container fade-in">
       <div className="verifier-header">
-        <div className="verifier-icon-large"></div>
+        <div className="verifier-icon-large">🛡️</div>
         <h1 className="verifier-title">Credential Verifier</h1>
         <p className="verifier-subtitle">
-          Upload a credential file to verify its authenticity
+          Upload a digital credential to cryptographically verify its authenticity and issuer.
         </p>
       </div>
 
@@ -73,25 +74,27 @@ const VerifierPage = ({ onBack }) => {
             <label className="form-label">Select Credential File</label>
             <div className="file-upload-container">
               <input
+                ref={fileInputRef}
                 id="verify-file-input"
                 type="file"
                 className="file-input"
                 onChange={handleFileChange}
                 accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                required
               />
               <label htmlFor="verify-file-input" className="file-upload-label">
-                <div className="file-upload-icon">📎</div>
+                <div className="file-upload-icon">
+                  {selectedFile ? '📄' : '📎'}
+                </div>
                 <div className="file-upload-text">
                   {selectedFile ? (
                     <>
                       <span className="file-name">{selectedFile.name}</span>
-                      <span className="file-change">Click to change</span>
+                      <span className="file-change">Click to change file</span>
                     </>
                   ) : (
                     <>
                       <span className="file-prompt">Click to upload credential</span>
-                      <span className="file-formats">PDF, DOC, DOCX, JPG, PNG</span>
+                      <span className="file-formats">Supports PDF, JPG, PNG</span>
                     </>
                   )}
                 </div>
@@ -105,19 +108,13 @@ const VerifierPage = ({ onBack }) => {
               className="btn btn-primary verify-btn"
               disabled={loading || !selectedFile}
             >
-              {loading ? (
-                <>
-                  Verifying
-                  <span className="loading"></span>
-                </>
-              ) : (
-                'Verify Credential'
-              )}
+              {loading ? 'Verifying on Blockchain...' : '🔍 Verify Credential'}
             </button>
+            
             {selectedFile && !loading && (
               <button 
                 type="button" 
-                className="btn btn-secondary"
+                className="btn btn-secondary reset-btn"
                 onClick={resetForm}
               >
                 Reset
@@ -133,29 +130,36 @@ const VerifierPage = ({ onBack }) => {
             </div>
             <div className="result-content">
               <h2 className="result-title">
-                {verificationResult.isValid ? 'Credential Verified' : 'Verification Failed'}
+                {verificationResult.isValid ? 'Valid Credential' : 'Invalid Credential'}
               </h2>
               <p className="result-message">{verificationResult.message}</p>
               
               <div className="result-details">
                 <div className="detail-row">
                   <span className="detail-label">File Name:</span>
-                  <span className="detail-value">{verificationResult.details ? verificationResult.details.filename || "NA" : "NA"}</span>
+                  <span className="detail-value">
+                    {verificationResult.details?.filename || selectedFile.name}
+                  </span>
                 </div>
+                
+                <div className="detail-row">
+                  <span className="detail-label">Issuer:</span>
+                  <span className="detail-value">
+                    {verificationResult.details?.issuer || "Unknown"}
+                  </span>
+                </div>
+
                 <div className="detail-row">
                   <span className="detail-label">Verification Time:</span>
                   <span className="detail-value">
-                    {verificationResult.details && verificationResult.details.verifiedAt ? new Date(verificationResult.details.verifiedAt).toLocaleString() : "NA"}
+                    {new Date().toLocaleString()}
                   </span>
                 </div>
-                <div className="detail-row">
-                  <span className="detail-label">Issuer:</span>
-                  <span className="detail-value">{verificationResult.details && verificationResult.details.issuer ? verificationResult.details.issuer : "NA"}</span>
-                </div>
+
                 <div className="detail-row">
                   <span className="detail-label">Status:</span>
-                  <span className={`status-badge ${verificationResult.isValid ? 'verified' : 'invalid'}`}>
-                    {verificationResult.details && verificationResult.details.status ? verificationResult.details.status : "NA" }
+                  <span className={`status-badge ${verificationResult.isValid ? 'verified' : 'rejected'}`}>
+                    {verificationResult.isValid ? 'VERIFIED' : 'REJECTED'}
                   </span>
                 </div>
               </div>
@@ -170,29 +174,29 @@ const VerifierPage = ({ onBack }) => {
           <div className="info-step">
             <div className="step-number">1</div>
             <div className="step-content">
-              <h4>Upload Credential</h4>
-              <p>Select the credential file you want to verify</p>
+              <h4>Upload</h4>
+              <p>Select the credential file provided by the issuer.</p>
             </div>
           </div>
           <div className="info-step">
             <div className="step-number">2</div>
             <div className="step-content">
-              <h4>Digital Signature Check</h4>
-              <p>System validates the cryptographic signature</p>
+              <h4>Hash Check</h4>
+              <p>We generate a cryptographic hash of the file locally.</p>
             </div>
           </div>
           <div className="info-step">
             <div className="step-number">3</div>
             <div className="step-content">
-              <h4>Issuer Verification</h4>
-              <p>Confirms the credential was issued by a trusted authority</p>
+              <h4>Blockchain Query</h4>
+              <p>We check the blockchain to see if this hash exists.</p>
             </div>
           </div>
           <div className="info-step">
             <div className="step-number">4</div>
             <div className="step-content">
-              <h4>Get Results</h4>
-              <p>Receive instant verification status and details</p>
+              <h4>Result</h4>
+              <p>If the hash matches and isn't revoked, it is valid.</p>
             </div>
           </div>
         </div>
