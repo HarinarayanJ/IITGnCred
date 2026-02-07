@@ -74,7 +74,6 @@ const HolderDashboard = ({ user, onLogout }) => {
           <h1 className="dashboard-title">Holder Dashboard</h1>
           <p className="dashboard-subtitle">
             Welcome back, {user.name} 
-            <span className="mono-badge">{user.wallet.slice(0, 6)}...{user.wallet.slice(-4)}</span>
           </p>
         </div>
         <button className="btn btn-secondary logout-btn" onClick={onLogout}>
@@ -87,8 +86,8 @@ const HolderDashboard = ({ user, onLogout }) => {
         <div className="section-header">
           <h2 className="section-title">Your Credentials</h2>
           <div className="credential-count">
-            <span className="count-number">{credentials.length}</span>
-            <span className="count-label">Total</span>
+            {/* <span className="count-number">{credentials.length}</span> */}
+            <span className="count-label">Total: {credentials.length}</span>
           </div>
         </div>
 
