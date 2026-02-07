@@ -19,6 +19,8 @@ const {
   verifyCredential,
   RevokeCredential,
 } = require("./Utils/Web3");
+
+const { generateMnemonic, generateSeedFromMnemonic } = require("./Utils/Recovery");
 const fs = require("fs");
 const ipfsModule = require("ipfs-http-client");
 const cors = require("cors");
@@ -63,6 +65,28 @@ app.post("/api/login", decryptMiddleWare, async (req, res) => {
   }
 });
 
+app.post("/api/recover", decryptMiddleWare, async (req, res) => {
+  try {
+    const mnemonic = req.body.mnemonic;
+    const privateKey = generateSeedFromMnemonic(mnemonic);
+    const account = web3.eth.accounts.privateKeyToAccount(privateKey);
+    res.status(200).send(
+      encryptWrapper({
+        account: account,
+        status: true,
+      }),
+    );
+  } catch (error) {
+    console.error("[ERROR] Recovery Failed:", error.message);
+    res.status(500).send(
+      encryptWrapper({
+        error: "Recovery Failed: " + error.message,
+        status: false,
+      }),
+    );
+  }
+});
+
 app.post("/api/register", decryptMiddleWare, async (req, res) => {
   try {
     const role = req.body.role;
@@ -76,9 +100,14 @@ app.post("/api/register", decryptMiddleWare, async (req, res) => {
         studentName,
         contractArtifact,
       );
-      res
-        .status(200)
-        .send(encryptWrapper({ account: newAccount, status: true }));
+      const mnemonic = generateMnemonic(newAccount.privateKey);
+      res.status(200).send(
+        encryptWrapper({
+          account: newAccount,
+          mnemonic: mnemonic,
+          status: true,
+        }),
+      );
     } else if (role === "University") {
       const newAccount = await createAccount(web3);
       const universityName = req.body.universityName;
@@ -89,9 +118,16 @@ app.post("/api/register", decryptMiddleWare, async (req, res) => {
         universityName,
         contractArtifact,
       );
+      const mnemonic = generateMnemonic(newAccount.privateKey);
       res
         .status(200)
-        .send(encryptWrapper({ account: newAccount, status: true }));
+        .send(
+          encryptWrapper({
+            account: newAccount,
+            mnemonic: mnemonic,
+            status: true,
+          }),
+        );
     } else {
       throw new Error("Invalid role specified");
     }

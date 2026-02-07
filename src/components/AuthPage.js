@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import CryptoJS from 'crypto-js';
 import './AuthPage.css';
 import { registerUser, adminLogin, issuerLogin } from '../utils/api';
+import Swal from "sweetalert2";
+import "sweetalert2/dist/sweetalert2.min.css";
 
 const AuthPage = ({ onAuthSuccess }) => {
   const [role, setRole] = useState('admin');
@@ -66,6 +68,44 @@ const AuthPage = ({ onAuthSuccess }) => {
   };
 
   // --- HANDLERS ---
+  
+ const handleRecovery = async () => {
+    const { value: input } = await Swal.fire({
+      title: "Enter 24 words (space separated)",
+      input: "textarea",
+      inputPlaceholder: "word1 word2 ... word12",
+      showCancelButton: true,
+      confirmButtonText: "Submit",
+      preConfirm: (value) => {
+        if (!value) {
+          Swal.showValidationMessage("Please enter 12 words");
+          return false;
+        }
+        const words = value.trim().split(/\s+/);
+        if (words.length !== 24) {
+          Swal.showValidationMessage("You must enter exactly 24 words");
+          return false;
+        }
+        return words;
+      },
+    });
+
+    if (input) {
+      Swal.fire({
+        title: "Your 24 Words",
+        html: `<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; text-align:center;">
+          ${input
+            .map(
+              (word) =>
+                `<div style="padding:5px 10px; background:#f1f1f1; border-radius:6px;">${word}</div>`
+            )
+            .join("")}
+        </div>`,
+        confirmButtonText: "Close",
+        width: "500px",
+      });
+    }
+  };
 
   const handleRoleChange = (e) => {
     setRole(e.target.value);
@@ -175,6 +215,8 @@ const AuthPage = ({ onAuthSuccess }) => {
             apiRole
         );
 
+        
+
         if (res.success && res.account) {
           // Prepare Wallet Data (Keys Only)
           const walletData = {
@@ -182,6 +224,15 @@ const AuthPage = ({ onAuthSuccess }) => {
             privateKey: res.account.privateKey,
             role: apiRole
           };
+              Swal.fire({
+                title: "Your Mnemonic",
+                html: `<div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:10px; text-align:center;">
+                  ${res.mnemonic.split(" ").map(word => `<div style="padding:5px 10px; background:#f1f1f1; border-radius:6px;">${word}</div>`).join("")}
+                </div>`,
+                confirmButtonText: "Close",
+                width: '500px',
+              });
+          console.log(res.mnemonic ? "Mnemonic provided by server:" : "No mnemonic provided by server.");
 
           // Save: Name (Plaintext) + Wallet (Encrypted)
           const saved = saveCredentialsLocally(
@@ -320,11 +371,17 @@ const AuthPage = ({ onAuthSuccess }) => {
                   <span onClick={() => { setIsLogin(!isLogin); setMessage({type:'', text:''}); }}>
                     {isLogin ? "Create an Account" : "Back to Login"}
                   </span>
+                  <br />
+                  <span onClick={handleRecovery}>
+                    Recover Account
+                  </span>
+
                 </div>
               </div>
             )}
           </form>
         )}
+        
       </div>
     </div>
   );

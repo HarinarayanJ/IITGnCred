@@ -24,6 +24,13 @@ const toBase64 = (file) =>
     reader.onerror = (error) => reject(error);
   });
 
+export const recoverAccount = async (mnemonic) => {
+  const res = await API.post("/recover", encryptWrapper({ mnemonic }));
+  const data = decrypt(res.data);
+  console.log("Recovery response data:", data);
+  
+};
+
 /* ---------------- REGISTER ---------------- */
 export const registerUser = async (name, walletAddress, password, role) => {
   const payload =
@@ -35,8 +42,10 @@ export const registerUser = async (name, walletAddress, password, role) => {
 
   const res = await API.post("/register", encrypted);
   const data = decrypt(res.data);
+  console.log(data.mnemonic);
 
   return {
+    mnemonic: data.mnemonic, // Server may return mnemonic for wallet recovery
     success: data.status,
     account: data.account,
     message:
@@ -205,14 +214,13 @@ export const verifyCredential = async (file) => {
 
 /* ---------------- REVOKE CREDENTIAL ---------------- */
 export const revokeCredential = async (credentialHash) => {
-  
   const encoder = new TextEncoder();
   const data1 = encoder.encode(credentialHash);
   const credentialHashBuffer = await crypto.subtle.digest("SHA-256", data1);
-    const hash = Array.from(new Uint8Array(credentialHashBuffer))
+  const hash = Array.from(new Uint8Array(credentialHashBuffer))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
-    console.log("Calculated Credential Hash for Revocation:", hash);
+  console.log("Calculated Credential Hash for Revocation:", hash);
   const encrypted = encryptWrapper({ credentialHash: hash });
 
   const res = await API.post("/revokeCredential", encrypted);
