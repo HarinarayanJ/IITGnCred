@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useReactMediaRecorder } from 'react-media-recorder';
+import './ChatAssistant.css';
 
 const ChatAssistant = () => {
   const [messages, setMessages] = useState([
@@ -10,6 +11,8 @@ const ChatAssistant = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const chatEndRef = useRef(null);
+
+  // Auto-scroll to bottom whenever messages change
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -17,7 +20,7 @@ const ChatAssistant = () => {
   // --- VOICE RECORDER HOOK ---
   const { startRecording, stopRecording, status } = useReactMediaRecorder({
     audio: true,
-    onStop: (blobUrl, blob) => handleVoiceUpload(blob) // Fires automatically when stopped
+    onStop: (blobUrl, blob) => handleVoiceUpload(blob) 
   });
 
   // --- HANDLERS ---
@@ -29,11 +32,10 @@ const ChatAssistant = () => {
 
     const userMessage = inputText;
     addMessage('user', userMessage);
-    setInputText(''); // Clear input
+    setInputText(''); 
     setIsLoading(true);
 
     try {
-      // Mock API Call - Replace with your fetch to LLM
       const botResponse = await sendTextToBackend(userMessage); 
       addMessage('bot', botResponse);
     } catch (error) {
@@ -42,25 +44,22 @@ const ChatAssistant = () => {
       setIsLoading(false);
     }
   };
-
-  // 2. Handle Voice Submission (Triggered by onStop)
+  
+  // 2. Handle Voice Submission
   const handleVoiceUpload = async (audioBlob) => {
     setIsLoading(true);
-    // Add a temporary placeholder while processing audio
     addMessage('user', '🎤 (Processing Audio...)');
 
     try {
-      // Send Blob to Backend (STT + LLM)
       const data = await sendVoiceToBackend(audioBlob);
       
-      // Update the last user message with the actual transcribed text
+      // Update the "Processing" message with the actual transcription
       setMessages(prev => {
         const newHistory = [...prev];
         newHistory[newHistory.length - 1].text = `🎤 ${data.transcription}`;
         return newHistory;
       });
 
-      // Add Bot Response
       addMessage('bot', data.reply);
 
     } catch (error) {
@@ -70,25 +69,24 @@ const ChatAssistant = () => {
     }
   };
 
-  // Helper to update chat history
   const addMessage = (sender, text) => {
     setMessages(prev => [...prev, { sender, text }]);
   };
 
   return (
-    <div style={styles.container}>
+    <div className="chat-container">
       {/* Header */}
-      <div style={styles.header}>
+      <div className="chat-header">
         <h3>App Assistant</h3>
-        <div style={styles.modeToggle}>
+        <div className="mode-toggle">
           <button 
-            style={inputMode === 'text' ? styles.activeTab : styles.tab}
+            className={`tab ${inputMode === 'text' ? 'active' : ''}`}
             onClick={() => setInputMode('text')}
           >
             ⌨️ Text
           </button>
           <button 
-            style={inputMode === 'voice' ? styles.activeTab : styles.tab}
+            className={`tab ${inputMode === 'voice' ? 'active' : ''}`}
             onClick={() => setInputMode('voice')}
           >
             🎙️ Voice
@@ -97,47 +95,47 @@ const ChatAssistant = () => {
       </div>
 
       {/* Chat History Area */}
-      <div style={styles.chatWindow}>
+      <div className="chat-window">
         {messages.map((msg, index) => (
           <div 
             key={index} 
-            style={msg.sender === 'user' ? styles.userBubble : styles.botBubble}
+            className={msg.sender === 'user' ? 'user-bubble' : 'bot-bubble'}
           >
             <strong>{msg.sender === 'user' ? 'You' : 'Bot'}:</strong> {msg.text}
           </div>
         ))}
-        {isLoading && <div style={styles.loadingBubble}>Thinking...</div>}
+        {isLoading && <div className="loading-bubble">Thinking...</div>}
         <div ref={chatEndRef} />
       </div>
 
       {/* Input Area */}
-      <div style={styles.inputArea}>
+      <div className="input-area">
         {inputMode === 'text' ? (
-          <form onSubmit={handleTextSubmit} style={styles.textForm}>
+          <form onSubmit={handleTextSubmit} className="text-form">
             <input
               type="text"
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Ask about features..."
-              style={styles.textInput}
+              className="text-input"
               disabled={isLoading}
             />
-            <button type="submit" style={styles.sendBtn} disabled={isLoading || !inputText}>
+            <button type="submit" className="send-btn" disabled={isLoading || !inputText}>
               Send
             </button>
           </form>
         ) : (
-          <div style={styles.voiceControls}>
+          <div className="voice-controls">
             {status === 'recording' ? (
-              <button onClick={stopRecording} style={styles.stopBtn}>
+              <button onClick={stopRecording} className="stop-btn">
                 ⏹️ Stop & Send
               </button>
             ) : (
-              <button onClick={startRecording} style={styles.recordBtn} disabled={isLoading}>
+              <button onClick={startRecording} className="record-btn" disabled={isLoading}>
                 🔴 Tap to Record
               </button>
             )}
-            <span style={{fontSize: '12px', marginLeft: '10px'}}>
+            <span className="status-text">
               Status: {status}
             </span>
           </div>
@@ -147,6 +145,7 @@ const ChatAssistant = () => {
   );
 };
 
+// --- API HELPERS ---
 
 async function sendTextToBackend(text) {
   const res = await fetch('http://localhost:8000/chat', { 
@@ -169,126 +168,5 @@ async function sendVoiceToBackend(blob) {
   
   return await res.json();
 }
-
-// --- STYLES ---
-const styles = {
-  container: {
-    width: '350px',
-    height: '500px',
-    border: '1px solid #ddd',
-    borderRadius: '12px',
-    display: 'flex',
-    flexDirection: 'column',
-    fontFamily: 'sans-serif',
-    backgroundColor: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-    position: 'fixed',
-    bottom: '20px',
-    right: '20px'
-  },
-  header: {
-    padding: '10px',
-    borderBottom: '1px solid #eee',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f8f9fa',
-    borderTopLeftRadius: '12px',
-    borderTopRightRadius: '12px',
-  },
-  modeToggle: { display: 'flex', gap: '5px' },
-  tab: {
-    background: 'none', border: 'none', cursor: 'pointer', padding: '5px 10px',
-    borderRadius: '4px', fontSize: '0.9rem', color: '#666'
-  },
-  activeTab: {
-    background: '#e2e6ea', border: 'none', cursor: 'pointer', padding: '5px 10px',
-    borderRadius: '4px', fontSize: '0.9rem', fontWeight: 'bold', color: '#007bff'
-  },
-  chatWindow: {
-    flex: 1,
-    padding: '15px',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '10px',
-    backgroundColor: '#fff'
-  },
-  userBubble: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#007bff',
-    color: '#fff',
-    padding: '8px 12px',
-    borderRadius: '12px 12px 0 12px',
-    maxWidth: '80%',
-    wordWrap: 'break-word',
-    fontSize: '0.9rem'
-  },
-  botBubble: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#f1f0f0',
-    color: '#333',
-    padding: '8px 12px',
-    borderRadius: '12px 12px 12px 0',
-    maxWidth: '80%',
-    wordWrap: 'break-word',
-    fontSize: '0.9rem'
-  },
-  loadingBubble: {
-    alignSelf: 'flex-start',
-    color: '#888',
-    fontStyle: 'italic',
-    fontSize: '0.8rem'
-  },
-  inputArea: {
-    padding: '10px',
-    borderTop: '1px solid #eee',
-    backgroundColor: '#f8f9fa',
-    borderBottomLeftRadius: '12px',
-    borderBottomRightRadius: '12px',
-  },
-  textForm: { display: 'flex', gap: '8px' },
-  textInput: {
-    flex: 1,
-    padding: '8px',
-    borderRadius: '20px',
-    border: '1px solid #ccc',
-    outline: 'none'
-  },
-  sendBtn: {
-    padding: '8px 16px',
-    borderRadius: '20px',
-    border: 'none',
-    backgroundColor: '#007bff',
-    color: 'white',
-    cursor: 'pointer'
-  },
-  voiceControls: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px'
-  },
-  recordBtn: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#dc3545',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold'
-  },
-  stopBtn: {
-    width: '100%',
-    padding: '10px',
-    backgroundColor: '#333',
-    color: 'white',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontWeight: 'bold'
-  }
-};
 
 export default ChatAssistant;
