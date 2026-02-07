@@ -3,7 +3,7 @@ import { decrypt, encryptWrapper } from "./Security";
 
 // Update Base URL to match the Express server port
 const API = axios.create({
-  baseURL: "http://10.240.0.76:3000/api",
+  baseURL: "http://10.7.28.28:3000/api",
 });
 
 API.interceptors.request.use((config) => {
