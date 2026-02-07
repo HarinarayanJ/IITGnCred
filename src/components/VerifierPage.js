@@ -57,7 +57,7 @@ const VerifierPage = ({ onBack }) => {
   return (
     <div className="verifier-page-container fade-in">
       <div className="verifier-header">
-        <div className="verifier-icon-large">✓</div>
+        <div className="verifier-icon-large"></div>
         <h1 className="verifier-title">Credential Verifier</h1>
         <p className="verifier-subtitle">
           Upload a credential file to verify its authenticity
@@ -108,7 +108,7 @@ const VerifierPage = ({ onBack }) => {
                   <span className="loading"></span>
                 </>
               ) : (
-                '🔍 Verify Credential'
+                'Verify Credential'
               )}
             </button>
             {selectedFile && !loading && (
