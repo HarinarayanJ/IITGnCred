@@ -2,10 +2,28 @@
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
+  padding: 20px;
 }
 
-.credentials-section {
-  animation: fadeIn 0.6s ease-out 0.2s both;
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding: 30px;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.mono-badge {
+  font-family: 'JetBrains Mono', monospace;
+  background: var(--bg-tertiary);
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: 10px;
+  font-size: 0.8rem;
+  color: var(--accent-primary);
 }
 
 .section-header {
@@ -44,13 +62,13 @@
 }
 
 .count-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: white;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
 }
 
+/* Grid & Cards */
 .credentials-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -58,10 +76,9 @@
 }
 
 .credential-card {
-  animation: fadeIn 0.6s ease-out both;
   display: flex;
   flex-direction: column;
-  transition: all 0.3s ease;
+  padding: 24px;
 }
 
 .credential-header {
@@ -79,37 +96,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 32px;
+  font-size: 30px;
   background: var(--bg-tertiary);
   border-radius: 12px;
   border: 2px solid var(--border-color);
 }
 
 .credential-badge {
-  padding: 6px 16px;
-  background: rgba(6, 255, 165, 0.2);
+  padding: 6px 14px;
+  background: rgba(6, 255, 165, 0.1);
   color: var(--success);
-  border: 2px solid var(--success);
+  border: 1px solid var(--success);
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-}
-
-.credential-body {
-  flex: 1;
-  margin-bottom: 20px;
 }
 
 .credential-name {
   font-family: 'Orbitron', sans-serif;
   font-size: 18px;
-  font-weight: 700;
-  color: var(--text-primary);
   margin-bottom: 16px;
-  letter-spacing: 1px;
-  word-break: break-word;
+  color: var(--text-primary);
 }
 
 .credential-meta {
@@ -121,57 +129,33 @@
 .meta-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   font-size: 13px;
-}
-
-.meta-label {
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 600;
-}
-
-.meta-value {
-  color: var(--text-primary);
-  font-weight: 500;
 }
 
 .credential-id {
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px;
   background: var(--bg-tertiary);
-  padding: 4px 8px;
+  padding: 2px 6px;
   border-radius: 4px;
-  border: 1px solid var(--border-color);
 }
 
 .credential-actions {
   display: flex;
   gap: 10px;
+  margin-top: auto;
   padding-top: 20px;
-  border-top: 2px solid var(--border-color);
 }
 
-.action-btn {
-  flex: 1;
-  padding: 12px;
-  font-size: 13px;
-}
-
+/* Modal Styling */
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2000;
-  padding: 20px;
-  animation: fadeIn 0.3s ease-out;
   backdrop-filter: blur(8px);
 }
 
@@ -180,98 +164,87 @@
   border: 2px solid var(--border-color);
   border-radius: 20px;
   max-width: 900px;
-  width: 100%;
+  width: 95%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px var(--shadow);
-  animation: slideIn 0.4s ease-out;
+  position: relative;
+  overflow: hidden;
 }
 
 .modal-header {
+  padding: 20px 30px;
+  border-bottom: 2px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 24px 30px;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.modal-title {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 24px;
-  font-weight: 800;
-  color: var(--text-primary);
-  letter-spacing: 1px;
 }
 
 .modal-close {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
   background: var(--bg-tertiary);
-  border: 2px solid var(--border-color);
   color: var(--text-primary);
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s ease;
-}
-
-.modal-close:hover {
-  background: var(--error);
-  border-color: var(--error);
-  color: white;
-  transform: rotate(90deg);
+  border: 2px solid var(--border-color);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 .modal-body {
   flex: 1;
-  padding: 30px;
-  overflow: auto;
+  padding: 20px;
+  overflow-y: auto;
+  display: flex;
+  justify-content: center;
 }
 
-.pdf-viewer {
-  width: 100%;
-  height: 600px;
-  border: 2px solid var(--border-color);
-  border-radius: 12px;
-}
+.pdf-wrapper { width: 100%; position: relative; }
+.pdf-viewer { width: 100%; height: 600px; border: none; border-radius: 8px; }
 
-.image-viewer {
-  width: 100%;
-  height: auto;
-  border-radius: 12px;
-  border: 2px solid var(--border-color);
-}
+.mobile-pdf-link { display: none; text-align: center; padding: 20px; }
+
+.image-viewer { max-width: 100%; height: auto; border-radius: 8px; }
 
 .modal-footer {
-  display: flex;
-  gap: 12px;
-  padding: 24px 30px;
+  padding: 20px 30px;
   border-top: 2px solid var(--border-color);
+  display: flex;
+  gap: 15px;
 }
 
-.modal-footer .btn {
-  flex: 1;
-}
+/* --- MOBILE RESPONSIVE --- */
 
 @media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+
   .section-header {
     flex-direction: column;
-    gap: 20px;
-    text-align: center;
+    gap: 15px;
   }
-  
+
   .credentials-grid {
     grid-template-columns: 1fr;
   }
+
+  /* Modal Fullscreen Transformation */
+  .modal-overlay { padding: 0; align-items: flex-end; }
   
   .modal-content {
-    max-height: 95vh;
+    width: 100%;
+    height: 100%;
+    max-height: 100vh;
+    border-radius: 0;
   }
+
+  .modal-footer {
+    flex-direction: column;
+  }
+
+  .pdf-viewer { height: 450px; }
   
-  .pdf-viewer {
-    height: 400px;
-  }
+  /* Show fallback for small screens where iframes struggle */
+  .mobile-pdf-link { display: block; }
 }
