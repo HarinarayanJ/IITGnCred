@@ -133,6 +133,11 @@ contract IdentityRegistry {
         return userCredentials[msg.sender];
     }
 
+    function getAllCredentials(address _student) public view returns (Credential[] memory) {
+        return userCredentials[_student];
+    }
+
+
     function getAddressByUsername(string memory _username) public view returns (address) {
         address studentAddr = usernameToAddress[_username];
         return studentAddr;

@@ -25,11 +25,6 @@ describe("Full E2E Blockchain Flow via Server API", () => {
     
     let studentToken, uniToken, govToken;
 
-    beforeAll(() => {
-        studentToken = generateToken(STUDENT, "Student");
-        uniToken = generateToken(UNI, "University");
-        govToken = generateToken(GOV, "Government");
-    });
 
     /**
      * STEP 1: STUDENT REGISTRATION
@@ -41,7 +36,6 @@ describe("Full E2E Blockchain Flow via Server API", () => {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${studentToken}`
             },
             body: payload
         });
@@ -61,7 +55,6 @@ describe("Full E2E Blockchain Flow via Server API", () => {
             method: "POST",
             headers: { 
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${uniToken}`
             },
             body: payload
         });

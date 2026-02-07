@@ -331,7 +331,7 @@ app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
     }
     const contract = await getContract(web3, contractArtifact);
     const credentials = await contract.methods
-      .getCredentialsByAddress(wallet)
+      .getAllCredentials(wallet)
       .call({ from: wallet });
     res.status(200).send(
       encryptWrapper({
@@ -349,6 +349,34 @@ app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
     );
   }
 });
+
+app.post("/api/verifyCredentials", JWTAuthMiddleware, decryptMiddleWare, async (req, res) => {
+  try {
+   const isValid = await verifyCredential(
+      web3,
+      req.body.credentialHash,
+      contractArtifact,
+    );
+    res.status(200).send(
+      encryptWrapper({
+        isValid,
+        status: true,
+      }),
+    );
+  } catch (error) {
+    console.error("[ERROR] Fetching Credentials Failed:", error.message);
+    res.status(500).send(
+      encryptWrapper({
+        error: "Fetching Credentials Failed: " + error.message,
+        status: false,
+      }),
+    );
+  }
+});
+
+
+
+
 
 //TODO: Remove this endpoint in production, only for testing purposes
 app.get("/api/dev/requests", async (req, res) => {
