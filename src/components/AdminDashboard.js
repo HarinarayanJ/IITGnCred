@@ -38,7 +38,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const handleApprove = async (walletAddress) => {
     try {
       await approveIssuer(walletAddress);
-      setMessage({ type: "success", text: "University approved successfully" });
+      setMessage({ type: "success", text: "Issuer approved successfully" });
       loadIssuers(); // Refresh list
     } catch (err) {
       setMessage({ type: "error", text: err.message || "Approval failed" });
@@ -48,7 +48,7 @@ const AdminDashboard = ({ user, onLogout }) => {
   const handleReject = async (walletAddress) => {
     try {
       await rejectIssuer(walletAddress);
-      setMessage({ type: "success", text: "University rejected" });
+      setMessage({ type: "success", text: "Issuer rejected" });
       loadIssuers(); // Refresh list
     } catch (err) {
       setMessage({ type: "error", text: err.message || "Rejection failed" });
@@ -59,10 +59,7 @@ const AdminDashboard = ({ user, onLogout }) => {
     <div className="admin-dashboard-container fade-in">
       <div className="dashboard-header">
         <div>
-          <h1 className="dashboard-title">Government Dashboard</h1>
-          <p className="dashboard-subtitle">
-            Admin Wallet: <span className="mono">{user.wallet}</span>
-          </p>
+          <h1 className="dashboard-title">Admin Dashboard</h1>
         </div>
         <button className="btn btn-secondary" onClick={onLogout}>
           Logout
@@ -115,7 +112,7 @@ const AdminDashboard = ({ user, onLogout }) => {
                   pendingIssuers.map((issuer) => (
                     <div key={issuer.walletAddress} className="issuer-card card">
                       <div className="card-header">
-                        <h3>{issuer.name || "Unknown University"}</h3>
+                        <h3>{issuer.name || "Unknown Issuer"}</h3>
                         <span className="role-tag">Issuer Request</span>
                       </div>
                       
@@ -157,7 +154,7 @@ const AdminDashboard = ({ user, onLogout }) => {
                   approvedIssuers.map((issuer) => (
                     <div key={issuer.walletAddress} className="issuer-card card approved">
                       <div className="card-header">
-                        <h3>{issuer.name || "Unknown University"}</h3>
+                        <h3>{issuer.name || "Unknown Issuer"}</h3>
                         <span className="status-badge active">Active</span>
                       </div>
                       <div className="card-body">
