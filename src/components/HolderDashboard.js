@@ -13,7 +13,7 @@ const HolderDashboard = ({ user, onLogout }) => {
     if (user && user.wallet) {
       loadCredentials();
     }
-  }, [user]);
+  });
 
   // Prevent background scrolling when modal is open
   useEffect(() => {

@@ -15,15 +15,6 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// Helper to convert file to Base64 for IPFS upload on server
-const toBase64 = (file) =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = (error) => reject(error);
-  });
-
 export const recoverAccount = async (mnemonic) => {
   const res = await API.post("/recover", encryptWrapper({ mnemonic }));
   const data = decrypt(res.data);
