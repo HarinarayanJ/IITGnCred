@@ -15,6 +15,7 @@ IITGnCred is a proof-of-concept decentralized identity and credential platform c
 - DID and identity registry smart contract
 - Admin / Issuer / Holder / Verifier flows implemented in backend and frontend
 - IPFS integration for storing artifacts
+- Chatbot with voice recognition for assistance
 
 ## Prerequisites
 - Node.js (>=16 recommended)
