@@ -23,6 +23,8 @@ const AdminDashboard = ({ user, onLogout }) => {
     try {
       const approved = await getApprovedIssuers(); 
       const pending = await getPendingIssuers();   
+      console.log("Approved Issuers:", approved);
+      console.log("Pending Issuers:", pending);
       setApprovedIssuers(approved || []);
       setPendingIssuers(pending || []);
     } catch (err) {
@@ -129,13 +131,13 @@ const AdminDashboard = ({ user, onLogout }) => {
                       <div className="issuer-actions">
                         <button
                           className="btn btn-success"
-                          onClick={() => handleApprove(issuer.walletAddress)}
+                          onClick={() => handleApprove(issuer.name)}
                         >
                           Approve
                         </button>
                         <button
                           className="btn btn-danger"
-                          onClick={() => handleReject(issuer.walletAddress)}
+                          onClick={() => handleReject(issuer.name)}
                         >
                           Reject
                         </button>

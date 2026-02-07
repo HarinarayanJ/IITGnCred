@@ -170,7 +170,6 @@ contract IdentityRegistry {
         require(issuers[uniAddress].status == IssuerStatus.Pending, "Issuer is not in Pending state");
         
         issuers[uniAddress].status = IssuerStatus.Authorized;
-        issuers[uniAddress].joinedAt = block.timestamp;
 
         emit IssuerApproved(_universityName, uniAddress);
     }

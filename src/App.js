@@ -62,17 +62,17 @@ function App() {
       )}
 
       {/* 2. Admin Dashboard */}
-      {user && role === 'admin' && (
+      {user && role === 'Gov' && (
         <AdminDashboard user={user} onLogout={handleLogout} />
       )}
 
       {/* 3. Issuer Dashboard */}
-      {user && role === 'issuer' && (
+      {user && role === 'Uni' && (
         <IssuerDashboard user={user} onLogout={handleLogout} />
       )}
 
       {/* 4. Holder Dashboard */}
-      {user && role === 'holder' && (
+      {user && role === 'Stu' && (
         <HolderDashboard user={user} onLogout={handleLogout} />
       )}
 

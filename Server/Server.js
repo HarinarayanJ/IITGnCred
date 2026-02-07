@@ -45,7 +45,7 @@ app.get("/api/health", async (_, res) => {
 
 app.post("/api/login", decryptMiddleWare, async (req, res) => {
   try {
-    const walletAddress = req.body.walletAddress.toString().replaceAlly('"', "");
+    const walletAddress = req.body.walletAddress.toString().replaceAll('"', "");
     const contract = await getContract(web3, contractArtifact);
     const role = await contract.methods.getAuthLevel(walletAddress).call();
     console.log("[INFO] Auth Level for", walletAddress, "is", role);
@@ -123,6 +123,7 @@ app.post(
         );
       }
       const { universityName } = req.body; // Extract from decrypted body
+      console.log(`[INFO] Approving University: ${universityName} by Gov Wallet: ${wallet}`);
       // eslint-disable-next-line no-unused-vars
       const _ = await approveUniversity(
         web3,

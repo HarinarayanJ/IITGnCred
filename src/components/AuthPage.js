@@ -4,7 +4,7 @@ import './AuthPage.css';
 import { registerUser, adminLogin } from '../utils/api';
 
 const AuthPage = ({ onAuthSuccess }) => {
-  const [role, setRole] = useState('');
+  const [role, setRole] = useState('admin');
   const [isLogin, setIsLogin] = useState(true);
 
   // Form State

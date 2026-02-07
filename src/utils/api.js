@@ -1,5 +1,4 @@
 import axios from "axios";
-import { encryptData, decryptData } from "./crypto";
 import { decrypt, encryptWrapper } from "./Security";
 
 // Update Base URL to match the Express server port
@@ -79,25 +78,25 @@ export const adminLogin = async (walletAddress, password) => {
 /* ---------------- PENDING ISSUERS ---------------- */
 export const getPendingIssuers = async () => {
   const res = await API.get("/requests");
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   if (!data.requests) return [];
 
   // Filter for status '0' (Pending)
   return data.requests.filter(
-    (req) => req.status === "0" || req.status === 0
+    (req) => req.status === "1"
   );
 };
 
 export const getApprovedIssuers = async () => {
   const res = await API.get("/requests");
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   if (!data.requests) return [];
 
   // Filter for status '2' (Approved) - Server converts BigInt to string
   const approved = data.requests.filter(
-    (req) => req.status === "2" || req.status === 2
+    (req) => req.status === "2"
   );
 
   return approved;
@@ -105,20 +104,20 @@ export const getApprovedIssuers = async () => {
 
 /* ---------------- APPROVE ISSUER ---------------- */
 export const approveIssuer = async (universityName) => {
-  const encrypted = encryptData({ universityName });
+  const encrypted = encryptWrapper({ universityName });
 
   const res = await API.post("/approve", encrypted);
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   return { success: data.status, error: data.error };
 };
 
 /* ---------------- REJECT ISSUER ---------------- */
 export const rejectIssuer = async (universityName) => {
-  const encrypted = encryptData({ universityName });
+  const encrypted = encryptWrapper({ universityName });
 
   const res = await API.post("/reject", encrypted);
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   return { success: data.status, error: data.error };
 };
@@ -137,7 +136,7 @@ export const issueCredential = async (studentUsername, file) => {
   // 2. Convert File to Base64 (Server expects data for IPFS upload)
   const fileBase64 = await toBase64(file);
 
-  const encrypted = encryptData({
+  const encrypted = encryptWrapper({
     student: studentUsername,
     credentialHash: credentialHash, // Hex string
     credentialFile: fileBase64,     // Actual file data
@@ -149,7 +148,7 @@ export const issueCredential = async (studentUsername, file) => {
     data: encrypted
   });
   
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   return {
     success: data.status,
@@ -161,7 +160,7 @@ export const issueCredential = async (studentUsername, file) => {
 export const getHolderCredentials = async () => {
   // Matches server endpoint: /api/getAllCrentials (Typos preserved)
   const res = await API.get("/getAllCrentials");
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   if (!data.status) {
     throw new Error(data.error || "Failed to fetch credentials");
@@ -193,10 +192,10 @@ export const verifyCredential = async (file) => {
 
 /* ---------------- REVOKE CREDENTIAL ---------------- */
 export const revokeCredential = async (credentialHash) => {
-  const encrypted = encryptData({ credentialHash });
+  const encrypted = encryptWrapper({ credentialHash });
 
   const res = await API.post("/revokeCredential", encrypted);
-  const data = decryptData(res.data);
+  const data = decrypt(res.data);
 
   return {
     success: data.status,

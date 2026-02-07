@@ -68,7 +68,7 @@ async function approveUniversity(
   const contract = await getContract(web3, contractArtifact);
   const receipt = await contract.methods.approveIssuer(universityName).send({
     from: wallet,
-    gas: 5000000, // Gas limit
+    gas: 500000, // Gas limit
   });
   return receipt;
 }
