@@ -6,6 +6,7 @@ import {
   approveIssuer,
   rejectIssuer,
 } from "../utils/api";
+import { ellipsis } from "../utils/crypto";
 
 const AdminDashboard = ({ user, onLogout }) => {
   const [activeTab, setActiveTab] = useState("pending");
@@ -118,7 +119,7 @@ const AdminDashboard = ({ user, onLogout }) => {
                       
                       <div className="card-body">
                         <label>Wallet Address:</label>
-                        <p className="mono small">{issuer.walletAddress}</p>
+                        <p className="mono small">{ellipsis(issuer.walletAddress, 10)}</p>
                         
                         {issuer.username && (
                            <p className="small text-muted">User: @{issuer.username}</p>
@@ -158,7 +159,7 @@ const AdminDashboard = ({ user, onLogout }) => {
                         <span className="status-badge active">Active</span>
                       </div>
                       <div className="card-body">
-                        <p className="mono small">{issuer.walletAddress}</p>
+                        <p className="mono small">{ellipsis(issuer.walletAddress, 10)}</p>
                       </div>
                     </div>
                   ))

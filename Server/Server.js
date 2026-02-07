@@ -122,7 +122,9 @@ app.post(
         );
       }
       const { universityName } = req.body; // Extract from decrypted body
-      console.log(`[INFO] Approving University: ${universityName} by Gov Wallet: ${wallet}`);
+      console.log(
+        `[INFO] Approving University: ${universityName} by Gov Wallet: ${wallet}`,
+      );
       // eslint-disable-next-line no-unused-vars
       const _ = await approveUniversity(
         web3,
@@ -230,7 +232,9 @@ app.post(
     try {
       const { wallet, role } = req.user; // Extracted from JWT
       if (role !== "Uni") {
-         console.warn(`[WARNING] Unauthorized Credential Issuance Attempt by Wallet: ${wallet} with Role: ${role}`);
+        console.warn(
+          `[WARNING] Unauthorized Credential Issuance Attempt by Wallet: ${wallet} with Role: ${role}`,
+        );
         return res.status(403).send(
           encryptWrapper({
             error: "Access Denied: Only Universities can issue credentials",
@@ -244,6 +248,9 @@ app.post(
       const studentAddress = await contract.methods
         .getAddressByUsername(student)
         .call();
+      console.log(
+        `[INFO] Issuing credential for student: ${student} at address: ${studentAddress} by University Wallet: ${credentialHash}`,
+      );
       // eslint-disable-next-line no-unused-vars
       const _ = await IssueCredentials(
         web3,
@@ -253,6 +260,11 @@ app.post(
         credentialHash,
         contractArtifact,
         cid,
+      );
+      res.status(200).send(
+        encryptWrapper({
+          status: true,
+        }),
       );
     } catch (error) {
       console.error("[ERROR] Issue Credentials Failed:", error.message);
@@ -273,7 +285,7 @@ app.post(
   async (req, res) => {
     try {
       const { wallet, role } = req.user; // Extracted from JWT
-      if (role !== "University") {
+      if (role !== "Uni") {
         return res.status(403).send(
           encryptWrapper({
             error: "Access Denied: Only Universities can revoke credentials",
@@ -323,6 +335,9 @@ app.post(
 app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
   try {
     const { wallet, role } = req.user; // Extracted from JWT
+    console.log(
+      `[INFO] Fetching credentials for Wallet: ${wallet} with Role: ${role}`,
+    );
     if (role !== "Stu") {
       return res.status(403).send(
         encryptWrapper({
@@ -356,33 +371,37 @@ app.get("/api/getAllCrentials", JWTAuthMiddleware, async (req, res) => {
   }
 });
 
-app.post("/api/verifyCredentials", JWTAuthMiddleware, decryptMiddleWare, async (req, res) => {
-  try {
-   const isValid = await verifyCredential(
-      web3,
-      req.body.credentialHash,
-      contractArtifact,
-    );
-    res.status(200).send(
-      encryptWrapper({
-        isValid,
-        status: true,
-      }),
-    );
-  } catch (error) {
-    console.error("[ERROR] Fetching Credentials Failed:", error.message);
-    res.status(500).send(
-      encryptWrapper({
-        error: "Fetching Credentials Failed: " + error.message,
-        status: false,
-      }),
-    );
-  }
-});
-
-
-
-
+app.post(
+  "/api/verifyCredentials",
+  JWTAuthMiddleware,
+  decryptMiddleWare,
+  async (req, res) => {
+    try {
+      const isValid = await verifyCredential(
+        web3,
+        req.body.credentialHash,
+        contractArtifact,
+      );
+      const safeCredentials = JSON.stringify(isValid, (key, value) =>
+        typeof value === "bigint" ? value.toString() : value,
+      );
+      res.status(200).send(
+        encryptWrapper({
+          isValid: safeCredentials,
+          status: true,
+        }),
+      );
+    } catch (error) {
+      console.error("[ERROR] Fetching Credentials Failed:", error.message);
+      res.status(500).send(
+        encryptWrapper({
+          error: "Fetching Credentials Failed: " + error.message,
+          status: false,
+        }),
+      );
+    }
+  },
+);
 
 //TODO: Remove this endpoint in production, only for testing purposes
 app.get("/api/dev/requests", async (req, res) => {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './HolderDashboard.css';
 import { getHolderCredentials } from '../utils/api';
+import { ellipsis } from '../utils/crypto';
 
 const HolderDashboard = ({ user, onLogout }) => {
   const [credentials, setCredentials] = useState([]);
@@ -37,17 +38,14 @@ const HolderDashboard = ({ user, onLogout }) => {
     }
   };
 
-  const handleView = (credential) => {
-    setSelectedCredential(credential);
-  };
-
   // Helper to construct IPFS URL
   const getFileUrl = (credential) => {
-    return credential.file || credential.fileData || `http://localhost:8080/ipfs/${credential.cid}`;
+    return `http://localhost:8080/ipfs/${credential.cid}`;
   };
 
   const handleDownload = (credential) => {
     const fileUrl = getFileUrl(credential);
+    console.log("Constructed file URL for download:", fileUrl);
     
     if (!fileUrl) {
       alert("File data not available");
@@ -56,6 +54,7 @@ const HolderDashboard = ({ user, onLogout }) => {
 
     const link = document.createElement('a');
     link.href = fileUrl;
+    link.target = '_blank';
     link.download = credential.fileName || `credential-${credential.id}.pdf`;
     document.body.appendChild(link);
     link.click();
@@ -100,7 +99,7 @@ const HolderDashboard = ({ user, onLogout }) => {
           <div className="empty-state card">
             <div className="empty-icon">📭</div>
             <h3>No Credentials Yet</h3>
-            <p>Your credentials will appear here once issued by your university.</p>
+            <p>Your credentials will appear here once issued by your Issuer.</p>
           </div>
         ) : (
           <div className="credentials-grid">
@@ -125,7 +124,7 @@ const HolderDashboard = ({ user, onLogout }) => {
                   <div className="credential-meta">
                     <div className="meta-item">
                       <span className="meta-label">Issuer:</span>
-                      <span className="meta-value">{credential.issuerName || credential.issuer}</span>
+                      <span className="meta-value">{ellipsis(credential.issuerName || credential.issuer, 10)}</span>
                     </div>
                     
                     <div className="meta-item">
@@ -147,9 +146,6 @@ const HolderDashboard = ({ user, onLogout }) => {
                 </div>
                 
                 <div className="credential-actions">
-                  <button className="btn btn-secondary action-btn" onClick={() => handleView(credential)}>
-                    View
-                  </button>
                   <button className="btn btn-primary action-btn" onClick={() => handleDownload(credential)}>
                     Download
                   </button>
@@ -180,6 +176,7 @@ const HolderDashboard = ({ user, onLogout }) => {
                 />
               ) : (
                 <div className="pdf-wrapper">
+                  {console.log("Rendering PDF for credential:", selectedCredential) ? "": ""}
                   <iframe 
                     src={getFileUrl(selectedCredential)} 
                     className="pdf-viewer"

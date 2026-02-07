@@ -76,7 +76,7 @@ const IssuerDashboard = ({ user, onLogout }) => {
 
     try {
       // Assuming revokeCredential accepts the file object or its hash
-      const result = await revokeCredential(revokeFile);
+      const result = await revokeCredential(revokeFile.data);
       setMessage({ type: 'success', text: result.message || "Credential revoked successfully" });
       setRevokeFile(null);
       const fileInput = document.getElementById('revoke-file-input');

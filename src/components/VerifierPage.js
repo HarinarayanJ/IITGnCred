@@ -36,7 +36,7 @@ const VerifierPage = () => {
       // Simulate API call delay for UX
       await new Promise(resolve => setTimeout(resolve, 800));
       
-      const result = await verifyCredential(selectedFile);
+      const result = await verifyCredential(selectedFile.data);
       setVerificationResult(result);
     } catch (error) {
       console.error("Verification Error:", error);

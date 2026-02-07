@@ -127,6 +127,7 @@ async function RevokeCredential(web3, credentialHash, contractArtifact, wallet) 
     from: wallet,
     gas: 5000000, // Gas limit
   });
+  console.log(receipt)
   return receipt;
 }
 

@@ -21,3 +21,11 @@ export const decryptData = (encryptedData, username, password) => {
 export const generateDummyDID = () => {
   return `did:example:${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}`;
 };
+
+export function ellipsis(str, maxLength) {
+  console.log("Ellipsis called with:", { str, maxLength });
+  if (!str) return '';
+  return str.length > maxLength
+    ? str.slice(0, maxLength) + '...'
+    : str;
+}

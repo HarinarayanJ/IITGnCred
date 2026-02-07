@@ -205,7 +205,15 @@ export const verifyCredential = async (file) => {
 
 /* ---------------- REVOKE CREDENTIAL ---------------- */
 export const revokeCredential = async (credentialHash) => {
-  const encrypted = encryptWrapper({ credentialHash });
+  
+  const encoder = new TextEncoder();
+  const data1 = encoder.encode(credentialHash);
+  const credentialHashBuffer = await crypto.subtle.digest("SHA-256", data1);
+    const hash = Array.from(new Uint8Array(credentialHashBuffer))
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+    console.log("Calculated Credential Hash for Revocation:", hash);
+  const encrypted = encryptWrapper({ credentialHash: hash });
 
   const res = await API.post("/revokeCredential", encrypted);
   const data = decrypt(res.data);
