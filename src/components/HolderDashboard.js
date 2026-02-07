@@ -7,19 +7,28 @@ const HolderDashboard = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [selectedCredential, setSelectedCredential] = useState(null);
 
+  // Load credentials on mount or when user wallet changes
   useEffect(() => {
     if (user && user.wallet) {
       loadCredentials();
     }
   }, [user]);
 
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (selectedCredential) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [selectedCredential]);
+
   const loadCredentials = async () => {
     setLoading(true);
     try {
-      // UPDATED: Use wallet address instead of username
       const creds = await getHolderCredentials(user.wallet);
       console.log("Fetched credentials for wallet:", user.wallet);
-      console.log("Credentials data:", creds);
       setCredentials(creds || []);
     } catch (error) {
       console.error('Failed to load credentials:', error);
@@ -32,9 +41,13 @@ const HolderDashboard = ({ user, onLogout }) => {
     setSelectedCredential(credential);
   };
 
+  // Helper to construct IPFS URL
+  const getFileUrl = (credential) => {
+    return credential.file || credential.fileData || `http://localhost:8080/ipfs/${credential.cid}`;
+  };
+
   const handleDownload = (credential) => {
-    // UPDATED: Check for 'file' property (common in IPFS/Blockchain responses)
-    const fileUrl = "http://localhost:8080/ipfs/" + credential.cid;
+    const fileUrl = getFileUrl(credential);
     
     if (!fileUrl) {
       alert("File data not available");
@@ -55,20 +68,22 @@ const HolderDashboard = ({ user, onLogout }) => {
 
   return (
     <div className="holder-dashboard-container fade-in">
+      {/* Header Section */}
       <div className="dashboard-header">
-        <div>
+        <div className="header-info">
           <h1 className="dashboard-title">Holder Dashboard</h1>
           <p className="dashboard-subtitle">
             Welcome back, {user.name} 
             <span className="mono-badge">{user.wallet.slice(0, 6)}...{user.wallet.slice(-4)}</span>
           </p>
         </div>
-        <button className="btn btn-secondary" onClick={onLogout}>
+        <button className="btn btn-secondary logout-btn" onClick={onLogout}>
           Logout
         </button>
       </div>
 
       <div className="credentials-section">
+        {/* Count/Stats Bar */}
         <div className="section-header">
           <h2 className="section-title">Your Credentials</h2>
           <div className="credential-count">
@@ -86,7 +101,7 @@ const HolderDashboard = ({ user, onLogout }) => {
           <div className="empty-state card">
             <div className="empty-icon">📭</div>
             <h3>No Credentials Yet</h3>
-            <p>You haven't received any credentials. They will appear here once issued by your university.</p>
+            <p>Your credentials will appear here once issued by your university.</p>
           </div>
         ) : (
           <div className="credentials-grid">
@@ -98,14 +113,15 @@ const HolderDashboard = ({ user, onLogout }) => {
               >
                 <div className="credential-header">
                   <div className="credential-icon">
-                    {/* Check file type safely */}
                     {(credential.fileType || '').includes('pdf') ? '📄' : '🎓'}
                   </div>
                   <div className="credential-badge">Verified</div>
                 </div>
                 
                 <div className="credential-body">
-                  <h3 className="credential-name">{credential.courseName || credential.fileName || "Credential"}</h3>
+                  <h3 className="credential-name">
+                    {credential.courseName || credential.fileName || "Credential"}
+                  </h3>
                   
                   <div className="credential-meta">
                     <div className="meta-item">
@@ -132,16 +148,10 @@ const HolderDashboard = ({ user, onLogout }) => {
                 </div>
                 
                 <div className="credential-actions">
-                  <button 
-                    className="btn btn-secondary action-btn"
-                    onClick={() => handleView(credential)}
-                  >
+                  <button className="btn btn-secondary action-btn" onClick={() => handleView(credential)}>
                     View
                   </button>
-                  <button 
-                    className="btn btn-primary action-btn"
-                    onClick={() => handleDownload(credential)}
-                  >
+                  <button className="btn btn-primary action-btn" onClick={() => handleDownload(credential)}>
                     Download
                   </button>
                 </div>
@@ -151,6 +161,7 @@ const HolderDashboard = ({ user, onLogout }) => {
         )}
       </div>
 
+      {/* --- RESPONSIVE MODAL --- */}
       {selectedCredential && (
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -162,33 +173,41 @@ const HolderDashboard = ({ user, onLogout }) => {
             </div>
             
             <div className="modal-body">
-              {/* Flexible viewer for PDF or Image */}
               {(selectedCredential.fileType || '').includes('image') ? (
                 <img 
-                  src={selectedCredential.file || selectedCredential.fileData} 
+                  src={getFileUrl(selectedCredential)} 
                   alt="Credential"
                   className="image-viewer"
                 />
               ) : (
-                <iframe 
-                  src={selectedCredential.file || selectedCredential.fileData} 
-                  className="pdf-viewer"
-                  title="Credential Preview"
-                />
+                <div className="pdf-wrapper">
+                  <iframe 
+                    src={getFileUrl(selectedCredential)} 
+                    className="pdf-viewer"
+                    title="Credential Preview"
+                  />
+                  {/* Fallback for mobile devices that don't support iframes well */}
+                  <div className="mobile-pdf-link">
+                    <p>Mobile preview may be limited.</p>
+                    <button 
+                      className="btn btn-secondary" 
+                      onClick={() => window.open(getFileUrl(selectedCredential), '_blank')}
+                    >
+                      Open in New Tab
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
             
             <div className="modal-footer">
               <button 
-                className="btn btn-primary"
+                className="btn btn-primary" 
                 onClick={() => handleDownload(selectedCredential)}
               >
                 Download Original
               </button>
-              <button 
-                className="btn btn-secondary"
-                onClick={closeModal}
-              >
+              <button className="btn btn-secondary" onClick={closeModal}>
                 Close
               </button>
             </div>
