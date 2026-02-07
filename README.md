@@ -1,5 +1,5 @@
 
-# SocioHack
+# IITGNCred
 
 ![Status](https://img.shields.io/badge/status-development-yellow)
 ![Node](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
@@ -92,10 +92,6 @@ npx jest ./Test/7_CredentialIssue.test.js
 - If ports conflict, adjust `Server` or frontend port settings.
 
 - **Tests:** Server unit tests have been run locally and are currently passing (Server/Test) — Feb 7, 2026.
-
-## Next steps
-- Run migrations and start the stack, then exercise Issuer/Holder flows in the UI.
-- I can also add a CONTRIBUTING guide and environment variable examples if you want.
 
 ---
 

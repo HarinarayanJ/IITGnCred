@@ -1,9 +1,11 @@
 import axios from "axios";
 import { encryptData, decryptData } from "./crypto";
+import { decrypt, encryptWrapper } from "./Security";
 
 // Update Base URL to match the Express server port
 const API = axios.create({
-  baseURL: "http://10.2.40.0:76/api",
+  baseURL: "http://localhost:3000/api",
+
 });
 
 API.interceptors.request.use((config) => {
@@ -11,6 +13,7 @@ API.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  config.headers["Content-Type"] = "application/json";
   return config;
 });
 
@@ -30,10 +33,10 @@ export const registerUser = async (name, walletAddress, password, role) => {
       ? { role, studentName: name }
       : { role, universityName: name };
 
-  const encrypted = encryptData(payload, walletAddress, password);
+  const encrypted = encryptWrapper(payload);
 
   const res = await API.post("/register", encrypted);
-  const data = decryptData(res.data, walletAddress, password);
+  const data = decrypt(res.data);
 
   return {
     success: data.status,
@@ -46,13 +49,13 @@ export const registerUser = async (name, walletAddress, password, role) => {
 };
 
 /* ---------------- LOGIN ---------------- */
-export const loginUser = async (walletAddress, password, role) => {
+export const loginUser = async (walletAddress) => {
   // Encrypt wallet address as expected by decryptMiddleWare
-  const encrypted = encryptData({ walletAddress }, walletAddress, password);
+  const encrypted = encryptWrapper({ walletAddress: walletAddress });
 
   const res = await API.post("/login", encrypted);
   // Server returns { token, role, status } inside encryptWrapper
-  const data = decryptData(res.data, walletAddress, password);
+  const data = decrypt(res.data);
 
   if (data.status) {
     localStorage.setItem("jwt", data.token);

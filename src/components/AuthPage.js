@@ -119,15 +119,10 @@ const AuthPage = ({ onAuthSuccess }) => {
               throw new Error("Decryption failed. Invalid Password or corrupt file.");
             }
 
-            const json = JSON.parse(originalText);
-            const address = json.walletAddress || json.address;
-            
-            if (!address) throw new Error("Invalid Admin File (Address missing)");
-
             // --- Verify with Server ---
-            const res = await adminLogin(address);
+            const res = await adminLogin(originalText);
             if (res.success) {
-              onAuthSuccess({ wallet: address, role: 'Gov' }, 'Gov');
+              onAuthSuccess({ wallet: originalText, role: 'Gov' }, 'Gov');
             } else {
               setMessage({ type: 'error', text: res.error || "Admin verification failed" });
             }

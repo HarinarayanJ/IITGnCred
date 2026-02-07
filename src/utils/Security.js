@@ -2,27 +2,8 @@
 // import jwt from "jsonwebtoken";
 
 const CryptoJS = require("crypto-js");
-const jwt = require("jsonwebtoken");
 
 const secretKey = "vOVH6sdmpNWjRRIqCc7rdxs01lwHzfr3"; // TODO: Change secret Key
-const TOKEN_EXPIRY = "24h";
-
-function getJWTToken(walletAddress, role) {
-  // 1. Define the Payload (Data inside the token)
-  const payload = {
-    wallet: walletAddress,
-    role: role,
-    issuedAt: Date.now(),
-  };
-
-  // 2. Sign the Token
-  // jwt.sign(payload, secretOrPrivateKey, [options, callback])
-  const token = jwt.sign(payload, secretKey, {
-    expiresIn: TOKEN_EXPIRY,
-  });
-
-  return token;
-}
 
 const encryptWrapper = (data) => {
   const jsonString = JSON.stringify(data);
@@ -40,7 +21,6 @@ const decrypt = (ciphertext) => {
 };
 
 const decryptMiddleWare = (req, res, next) => {
-  console.log(req.body)
   try {
     if (req.body.content) {
       req.body = decrypt(req.body);
@@ -51,27 +31,10 @@ const decryptMiddleWare = (req, res, next) => {
   }
 };
 
-const JWTAuthMiddleware = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer <TOKEN>
-
-  if (!token) return res.sendStatus(401);
-
-  jwt.verify(token, secretKey, (err, user) => {
-    if (err) return res.sendStatus(403);
-    req.user = {
-      wallet: user.wallet,
-      role: user.role,
-    }; // Attach user info to request
-    next();
-  });
-};
 
 module.exports = {
-  getJWTToken,
   encryptWrapper,
   encrypt,
   decrypt,
   decryptMiddleWare,
-  JWTAuthMiddleware,
 };

@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "axios": "^1.13.4",
+    "crypto-browserify": "^3.12.1",
     "crypto-js": "^4.2.0",
     "ipfs-http-client": "^56.0.3",
     "react": "^18.2.0",

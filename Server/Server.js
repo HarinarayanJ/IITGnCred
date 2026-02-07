@@ -45,7 +45,7 @@ app.get("/api/health", async (_, res) => {
 
 app.post("/api/login", decryptMiddleWare, async (req, res) => {
   try {
-    const walletAddress = req.body.walletAddress;
+    const walletAddress = req.body.walletAddress.toString().replaceAlly('"', "");
     const contract = await getContract(web3, contractArtifact);
     const role = await contract.methods.getAuthLevel(walletAddress).call();
     console.log("[INFO] Auth Level for", walletAddress, "is", role);
