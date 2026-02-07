@@ -1,11 +1,7 @@
 
 # IITGNCred
 
-![Status](https://img.shields.io/badge/status-development-yellow)
-![Node](https://img.shields.io/badge/node-%3E%3D16-brightgreen)
-![Tests](https://img.shields.io/badge/tests-passing-brightgreen)
-
-SocioHack is a proof-of-concept decentralized identity and credential platform combining Ethereum smart contracts, IPFS, and a Node/React full-stack server and frontend.
+IITGnCred is a proof-of-concept decentralized identity and credential platform combining Ethereum smart contracts, IPFS, and a Node/React full-stack server and frontend.
 
 **Status:** Development
 
@@ -17,7 +13,7 @@ SocioHack is a proof-of-concept decentralized identity and credential platform c
 
 ## Key Features
 - DID and identity registry smart contract
-- Issuer / Holder / Verifier flows implemented in backend and frontend
+- Admin / Issuer / Holder / Verifier flows implemented in backend and frontend
 - IPFS integration for storing artifacts
 
 ## Prerequisites
