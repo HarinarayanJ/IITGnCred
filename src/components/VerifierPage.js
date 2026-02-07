@@ -61,10 +61,9 @@ const VerifierPage = () => {
   return (
     <div className="verifier-page-container fade-in">
       <div className="verifier-header">
-        <div className="verifier-icon-large">🛡️</div>
-        <h1 className="verifier-title">Credential Verifier</h1>
+        <h1 className="verifier-title">Certificate Verification</h1>
         <p className="verifier-subtitle">
-          Upload a digital credential to cryptographically verify its authenticity and issuer.
+          Upload a digital certificate to cryptographically verify its authenticity and issuer.
         </p>
       </div>
 
@@ -108,18 +107,10 @@ const VerifierPage = () => {
               className="btn btn-primary verify-btn"
               disabled={loading || !selectedFile}
             >
-              {loading ? 'Verifying on Blockchain...' : '🔍 Verify Credential'}
+              {loading ? 'Verifying on Blockchain...' : 'Verify Certificate'}
             </button>
             
-            {selectedFile && !loading && (
-              <button 
-                type="button" 
-                className="btn btn-secondary reset-btn"
-                onClick={resetForm}
-              >
-                Reset
-              </button>
-            )}
+            
           </div>
         </form>
 
@@ -168,39 +159,7 @@ const VerifierPage = () => {
         )}
       </div>
 
-      <div className="verifier-info card">
-        <h3 className="info-title">How Verification Works</h3>
-        <div className="info-steps">
-          <div className="info-step">
-            <div className="step-number">1</div>
-            <div className="step-content">
-              <h4>Upload</h4>
-              <p>Select the credential file provided by the issuer.</p>
-            </div>
-          </div>
-          <div className="info-step">
-            <div className="step-number">2</div>
-            <div className="step-content">
-              <h4>Hash Check</h4>
-              <p>We generate a cryptographic hash of the file locally.</p>
-            </div>
-          </div>
-          <div className="info-step">
-            <div className="step-number">3</div>
-            <div className="step-content">
-              <h4>Blockchain Query</h4>
-              <p>We check the blockchain to see if this hash exists.</p>
-            </div>
-          </div>
-          <div className="info-step">
-            <div className="step-number">4</div>
-            <div className="step-content">
-              <h4>Result</h4>
-              <p>If the hash matches and isn't revoked, it is valid.</p>
-            </div>
-          </div>
-        </div>
-      </div>
+      
     </div>
   );
 };
