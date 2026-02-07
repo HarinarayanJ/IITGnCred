@@ -8,14 +8,17 @@ const HolderDashboard = ({ user, onLogout }) => {
   const [selectedCredential, setSelectedCredential] = useState(null);
 
   useEffect(() => {
-    loadCredentials();
-  }, []);
+    if (user && user.wallet) {
+      loadCredentials();
+    }
+  }, [user]);
 
   const loadCredentials = async () => {
     setLoading(true);
     try {
-      const creds = await getHolderCredentials(user.username);
-      setCredentials(creds);
+      // UPDATED: Use wallet address instead of username
+      const creds = await getHolderCredentials(user.wallet);
+      setCredentials(creds || []);
     } catch (error) {
       console.error('Failed to load credentials:', error);
     } finally {
@@ -28,9 +31,17 @@ const HolderDashboard = ({ user, onLogout }) => {
   };
 
   const handleDownload = (credential) => {
+    // UPDATED: Check for 'file' property (common in IPFS/Blockchain responses)
+    const fileUrl = credential.file || credential.fileData;
+    
+    if (!fileUrl) {
+      alert("File data not available");
+      return;
+    }
+
     const link = document.createElement('a');
-    link.href = credential.fileData;
-    link.download = credential.fileName;
+    link.href = fileUrl;
+    link.download = credential.fileName || `credential-${credential.id}.pdf`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -44,8 +55,11 @@ const HolderDashboard = ({ user, onLogout }) => {
     <div className="holder-dashboard-container fade-in">
       <div className="dashboard-header">
         <div>
-          <h1 className="dashboard-title">🎒 Holder Dashboard</h1>
-          <p className="dashboard-subtitle">Welcome back, {user.name}</p>
+          <h1 className="dashboard-title">Holder Dashboard</h1>
+          <p className="dashboard-subtitle">
+            Welcome back, {user.name} 
+            <span className="mono-badge">{user.wallet.slice(0, 6)}...{user.wallet.slice(-4)}</span>
+          </p>
         </div>
         <button className="btn btn-secondary" onClick={onLogout}>
           Logout
@@ -63,46 +77,54 @@ const HolderDashboard = ({ user, onLogout }) => {
 
         {loading ? (
           <div className="loading-container">
-            <span className="loading"></span>
+            <div className="loading-spinner"></div>
             <p>Loading credentials...</p>
           </div>
         ) : credentials.length === 0 ? (
           <div className="empty-state card">
             <div className="empty-icon">📭</div>
             <h3>No Credentials Yet</h3>
-            <p>You haven't received any credentials. They will appear here once issued.</p>
+            <p>You haven't received any credentials. They will appear here once issued by your university.</p>
           </div>
         ) : (
           <div className="credentials-grid">
             {credentials.map((credential, index) => (
               <div 
-                key={credential.id} 
+                key={credential.id || index} 
                 className="credential-card card"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <div className="credential-header">
                   <div className="credential-icon">
-                    {credential.fileType.includes('pdf') ? '📄' : '🖼️'}
+                    {/* Check file type safely */}
+                    {(credential.fileType || '').includes('pdf') ? '📄' : '🎓'}
                   </div>
                   <div className="credential-badge">Verified</div>
                 </div>
                 
                 <div className="credential-body">
-                  <h3 className="credential-name">{credential.fileName}</h3>
+                  <h3 className="credential-name">{credential.courseName || credential.fileName || "Credential"}</h3>
+                  
                   <div className="credential-meta">
                     <div className="meta-item">
                       <span className="meta-label">Issuer:</span>
-                      <span className="meta-value">{credential.issuer}</span>
+                      <span className="meta-value">{credential.issuerName || credential.issuer}</span>
                     </div>
+                    
                     <div className="meta-item">
                       <span className="meta-label">Issued:</span>
                       <span className="meta-value">
-                        {new Date(credential.issuedAt).toLocaleDateString()}
+                        {credential.timestamp 
+                          ? new Date(credential.timestamp).toLocaleDateString() 
+                          : new Date().toLocaleDateString()}
                       </span>
                     </div>
+
                     <div className="meta-item">
                       <span className="meta-label">ID:</span>
-                      <span className="meta-value credential-id">{credential.id}</span>
+                      <span className="meta-value credential-id" title={credential.id}>
+                        {credential.id ? credential.id.toString().slice(0, 8) + '...' : 'N/A'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -112,13 +134,13 @@ const HolderDashboard = ({ user, onLogout }) => {
                     className="btn btn-secondary action-btn"
                     onClick={() => handleView(credential)}
                   >
-                    👁️ View
+                    View
                   </button>
                   <button 
                     className="btn btn-primary action-btn"
                     onClick={() => handleDownload(credential)}
                   >
-                    ⬇️ Download
+                    Download
                   </button>
                 </div>
               </div>
@@ -131,30 +153,35 @@ const HolderDashboard = ({ user, onLogout }) => {
         <div className="modal-overlay" onClick={closeModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="modal-header">
-              <h2 className="modal-title">{selectedCredential.fileName}</h2>
+              <h2 className="modal-title">
+                {selectedCredential.courseName || selectedCredential.fileName}
+              </h2>
               <button className="modal-close" onClick={closeModal}>✕</button>
             </div>
+            
             <div className="modal-body">
-              {selectedCredential.fileType.includes('pdf') ? (
+              {/* Flexible viewer for PDF or Image */}
+              {(selectedCredential.fileType || '').includes('image') ? (
+                <img 
+                  src={selectedCredential.file || selectedCredential.fileData} 
+                  alt="Credential"
+                  className="image-viewer"
+                />
+              ) : (
                 <iframe 
-                  src={selectedCredential.fileData} 
+                  src={selectedCredential.file || selectedCredential.fileData} 
                   className="pdf-viewer"
                   title="Credential Preview"
                 />
-              ) : (
-                <img 
-                  src={selectedCredential.fileData} 
-                  alt={selectedCredential.fileName}
-                  className="image-viewer"
-                />
               )}
             </div>
+            
             <div className="modal-footer">
               <button 
                 className="btn btn-primary"
                 onClick={() => handleDownload(selectedCredential)}
               >
-                ⬇️ Download
+                Download Original
               </button>
               <button 
                 className="btn btn-secondary"
